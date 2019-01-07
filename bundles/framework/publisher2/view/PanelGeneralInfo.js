@@ -32,9 +32,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelGeneralInfo
         };
         this.langField = {
             template: jQuery('<div class="field">' +
-                    '<div class="help icon-info" title="' + localization.language.tooltip + '" helptags="portti,help,publisher,language"></div>' +
-                    '<div class="language-select-wrapper"></div>' +
-                    '<div class="info-label"></div>' +
+                '<div class="help icon-info" title="' + localization.language.tooltip + '" helptags="portti,help,publisher,language"></div>' +
                 '</div>')
         };
         this.panel = null;
@@ -118,7 +116,8 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelGeneralInfo
             langField.setHandler(function (value) {
                 me._languageChanged(value);
             });
-            langElement.find('.language-select-wrapper').append(langField.getElement());
+            langElement.append(langField.getElement());
+            langElement.append('<div class="info-label"></div>');
             me.langField.field = langField;
             me.langField.element = langElement;
 
@@ -132,7 +131,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelGeneralInfo
          * @return {Oskari.userinterface.component.AccordionPanel}
          */
         getPanel: function () {
-            if (this.panel) {
+            if(this.panel) {
                 return this.panel;
             }
             var panel = Oskari.clazz.create('Oskari.userinterface.component.AccordionPanel'),
@@ -155,10 +154,11 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelGeneralInfo
          * Show notification if selected language is different from the oskari's main language selection
          * @param {String} value
          */
-        _languageChanged: function (value) {
+        _languageChanged: function(value) {
             var me = this,
-                message = (value !== Oskari.getLang() ? me.loc.language.languageChangedDisclaimer : '');
+                message = (value !== Oskari.getLang() ? me.loc.language.languageChangedDisclaimer:"");
             jQuery(me.langField.element).find('div.info-label').html(message);
+
         },
         /**
          * Returns the selections the user has done with the form inputs.

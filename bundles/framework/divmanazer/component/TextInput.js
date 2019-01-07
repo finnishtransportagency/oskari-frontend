@@ -9,6 +9,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
      * @method create called automatically on construction
      */
     function (name) {
+        
         var me = this,
             closeIcon = document.createElement('div'),
             controlsWrapper = document.createElement('div');
@@ -45,6 +46,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * Focuses the component.
          */
         focus: function () {
+            
             this._input.focus();
         },
 
@@ -53,6 +55,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * @return {Boolean} enabled
          */
         isEnabled: function () {
+            
             return !this.getElement().disabled;
         },
 
@@ -61,6 +64,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * @param {Boolean} enabled
          */
         _setEnabledImpl: function (enabled) {
+            
             this._input.disabled = !enabled;
         },
 
@@ -69,6 +73,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * @private
          */
         _valueChanged: function () {
+            
             if (this.getHandler()) {
                 this.getHandler()(this.getValue());
             }
@@ -79,6 +84,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * @return {String} name
          */
         getName: function () {
+            
             return this._input.name;
         },
 
@@ -87,6 +93,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * @param {String} name
          */
         setName: function (name) {
+            
             this._input.name = name || '';
         },
 
@@ -95,6 +102,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * @return {String} placeholder
          */
         getPlaceholder: function () {
+            
             return this._input.placeholder;
         },
 
@@ -103,6 +111,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * @param {String} placeholder
          */
         setPlaceholder: function (placeholder) {
+            
             this._input.placeholder = placeholder;
         },
 
@@ -110,6 +119,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * @method _setRequiredImpl
          */
         _setRequiredImpl: function () {
+            
             this._input.required = this.isRequired();
         },
 
@@ -118,6 +128,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * @return {String} title
          */
         getTitle: function () {
+            
             return this._titleEl.textContent;
         },
 
@@ -126,6 +137,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * @param {String} title
          */
         setTitle: function (title) {
+            
             this._titleEl.textContent = '';
             if (title !== null && title !== undefined) {
                 this._titleEl.style.display = '';
@@ -140,6 +152,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * @return {String} tooltip
          */
         getTooltip: function () {
+            
             return this._element.title;
         },
 
@@ -148,6 +161,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * @param {String} tooltip
          */
         setTooltip: function (tooltip) {
+            
             this._element.title = tooltip;
         },
 
@@ -156,6 +170,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * @return {String} value
          */
         getValue: function () {
+            
             return this._input.value;
         },
 
@@ -164,6 +179,7 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * @param {String} value
          */
         setValue: function (value) {
+            
             this._input.value = value;
         },
 
@@ -171,9 +187,10 @@ Oskari.clazz.define('Oskari.userinterface.component.TextInput',
          * @method _setVisibleImpl
          */
         _setVisibleImpl: function () {
+            
             this.getElement().style.display = this.isVisible() ? '' : 'none';
         }
     }, {
         extend: ['Oskari.userinterface.component.FormComponent']
     }
-);
+    );

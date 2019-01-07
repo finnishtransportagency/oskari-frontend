@@ -21,7 +21,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.PanButtons',
         this._name = 'PanButtons';
 
         me._mobileDefs = {
-            buttons: {
+            buttons:  {
                 'mobile-reset': {
                     iconCls: 'mobile-reset-map-state',
                     tooltip: '',
@@ -29,7 +29,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.PanButtons',
                     show: true,
                     callback: function (el) {
                         if (!me.inLayerToolsEditMode()) {
-                            var requestBuilder = Oskari.requestBuilder(
+                            var requestBuilder = me.getSandbox().getRequestBuilder(
                                 'StateHandler.SetStateRequest'
                             );
                             if (requestBuilder) {
@@ -75,19 +75,20 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.PanButtons',
                 right = el.find('.panbuttons_right'),
                 top = el.find('.panbuttons_up'),
                 bottom = el.find('.panbuttons_down'),
+                pbimg = me.getImagePath(),
                 panbuttonDivImg = el.find('.panbuttonDivImg');
             // update path from config
-            panbuttonDivImg.attr('src', me.getImagePath('empty.png'));
+            panbuttonDivImg.attr('src', pbimg + 'empty.png');
 
-            center.on('mouseover', function (event) {
+            center.bind('mouseover', function (event) {
                 panbuttonDivImg.addClass('root');
             });
-            center.on('mouseout', function (event) {
+            center.bind('mouseout', function (event) {
                 panbuttonDivImg.removeClass('root');
             });
-            center.on('click', function (event) {
+            center.bind('click', function (event) {
                 if (!me.inLayerToolsEditMode()) {
-                    var requestBuilder = Oskari.requestBuilder(
+                    var requestBuilder = me.getSandbox().getRequestBuilder(
                         'StateHandler.SetStateRequest'
                     );
                     if (requestBuilder) {
@@ -98,54 +99,54 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.PanButtons',
                 }
             });
 
-            left.on('mouseover', function (event) {
+            left.bind('mouseover', function (event) {
                 panbuttonDivImg.addClass('left');
             });
-            left.on('mouseout', function (event) {
+            left.bind('mouseout', function (event) {
                 panbuttonDivImg.removeClass('left');
             });
-            left.on('click', function (event) {
+            left.bind('click', function (event) {
                 if (!me.inLayerToolsEditMode()) {
                     me.getMapModule().panMapByPixels(-100, 0, true);
                 }
             });
 
-            right.on('mouseover', function (event) {
+            right.bind('mouseover', function (event) {
                 panbuttonDivImg.addClass('right');
             });
-            right.on('mouseout', function (event) {
+            right.bind('mouseout', function (event) {
                 panbuttonDivImg.removeClass('right');
             });
-            right.on('click', function (event) {
+            right.bind('click', function (event) {
                 if (!me.inLayerToolsEditMode()) {
                     me.getMapModule().panMapByPixels(100, 0, true);
                 }
             });
 
-            top.on('mouseover', function (event) {
+            top.bind('mouseover', function (event) {
                 panbuttonDivImg.addClass('up');
             });
-            top.on('mouseout', function (event) {
+            top.bind('mouseout', function (event) {
                 panbuttonDivImg.removeClass('up');
             });
-            top.on('click', function (event) {
+            top.bind('click', function (event) {
                 if (!me.inLayerToolsEditMode()) {
                     me.getMapModule().panMapByPixels(0, -100, true);
                 }
             });
 
-            bottom.on('mouseover', function (event) {
+            bottom.bind('mouseover', function (event) {
                 panbuttonDivImg.addClass('down');
             });
-            bottom.on('mouseout', function (event) {
+            bottom.bind('mouseout', function (event) {
                 panbuttonDivImg.removeClass('down');
             });
-            bottom.on('click', function (event) {
+            bottom.bind('click', function (event) {
                 if (!me.inLayerToolsEditMode()) {
                     me.getMapModule().panMapByPixels(0, 100, true);
                 }
             });
-            el.on('mousedown', function (event) {
+            el.mousedown(function (event) {
                 if (!me.inLayerToolsEditMode()) {
                     var radius = Math.round(0.5 * panbuttonDivImg[0].width),
                         pbOffset = panbuttonDivImg.offset(),
@@ -173,13 +174,14 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.PanButtons',
             if (conf && conf.toolStyle) {
                 me.changeToolStyle(conf.toolStyle, me.getElement());
             } else {
-                // not found -> use the style config obtained from the mapmodule.
+                //not found -> use the style config obtained from the mapmodule.
                 var toolStyle = me.getToolStyleFromMapModule();
                 if (toolStyle !== null && toolStyle !== undefined) {
                     me.changeToolStyle(toolStyle, me.getElement());
                 }
             }
         },
+
 
         /**
          * @method changeToolStyle
@@ -198,7 +200,9 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.PanButtons',
             if (styleName === null) {
                 panButtons.removeAttr('style');
             } else {
-                var bgImg = this.getImagePath('panbutton-sprites-' + styleName + '.png');
+
+                var imgUrl = this.getImagePath(),
+                    bgImg = imgUrl + 'panbutton-sprites-' + styleName + '.png';
 
                 panButtons.css({
                     'background-image': 'url("' + bgImg + '")'
@@ -211,18 +215,19 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.PanButtons',
          * @param  {Boolean} mapInMobileMode is map in mobile mode
          * @param {Boolean} forced application has started and ui should be rendered with assets that are available
          */
-        redrawUI: function (mapInMobileMode, forced) {
-            if (!this.isVisible()) {
+        redrawUI: function(mapInMobileMode, forced) {
+            if(!this.isVisible()) {
                 // no point in drawing the ui if we are not visible
                 return;
             }
             var me = this;
+            var sandbox = me.getSandbox();
             var mobileDefs = this.getMobileDefs();
 
             // don't do anything now if request is not available.
             // When returning false, this will be called again when the request is available
             var toolbarNotReady = this.removeToolbarButtons(mobileDefs.buttons, mobileDefs.buttonGroup);
-            if (!forced && toolbarNotReady) {
+            if(!forced && toolbarNotReady) {
                 return true;
             }
             this.teardownUI();
@@ -234,18 +239,6 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.PanButtons',
                 me.refresh();
                 this.addToPluginContainer(me._element);
             }
-        },
-        teardownUI: function () {
-            this.removeFromPluginContainer(this.getElement());
-            var mobileDefs = this.getMobileDefs();
-            this.removeToolbarButtons(mobileDefs.buttons, mobileDefs.buttonGroup);
-        },
-        /**
-         * @method _stopPluginImpl BasicMapModulePlugin method override
-         * @param {Oskari.Sandbox} sandbox
-         */
-        _stopPluginImpl: function (sandbox) {
-            this.teardownUI();
         }
     }, {
         'extend': ['Oskari.mapping.mapmodule.plugin.BasicMapModulePlugin'],

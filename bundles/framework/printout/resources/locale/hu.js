@@ -55,7 +55,8 @@ Oskari.registerLocalization(
                 "tooltip": "Kattintson a kis előnézetre egy nagyobb méretű előnézethez.",
                 "pending": "Az előnézet hamarosan frissülni fog.",
                 "notes": {
-                    "extent": "Az előnézetet a nyomtatási méretének beállításához használhatjuk."
+                    "extent": "Az előnézetet a nyomtatási méretének beállításához használhatjuk.",
+                    "restriction": "Nem minden térképréteg jelenik meg az előnézetben."
                 }
             },
             "buttons": {

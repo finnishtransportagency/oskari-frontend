@@ -32,6 +32,7 @@ Oskari.clazz.define('Oskari.framework.bundle.oskariui.DomManager',
             return this.partsMap;
         },
         pushLayout: function (l) {
+
             if (this.layout) {
                 this.layout.removeLayout(this);
             }

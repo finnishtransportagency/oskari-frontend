@@ -12,7 +12,7 @@ Oskari.clazz.define(
      * @param {Object} config
      *     JSON config with params needed to run the plugin
      */
-    function (config) {
+    function(config) {
         var me = this;
         me._clazz =
             'Oskari.mapframework.bundle.mapmodule.plugin.SearchPlugin';
@@ -29,8 +29,9 @@ Oskari.clazz.define(
          *
          *
          */
-        _initImpl: function () {
-            var me = this;
+        _initImpl: function() {
+            var me = this,
+                ajaxUrl = null;
 
             me._loc = Oskari.getLocalization('MapModule', Oskari.getLang() || Oskari.getDefaultLanguage()).plugin.SearchPlugin;
 
@@ -129,11 +130,11 @@ Oskari.clazz.define(
                 'Oskari.service.search.SearchService', me.getSandbox(), me.getConfig().url);
         },
 
-        _setLayerToolsEditModeImpl: function () {
+        _setLayerToolsEditModeImpl: function() {
             var me = this,
                 el = me.getElement(),
                 overlay;
-            if (!el) {
+            if(!el) {
                 return;
             }
             if (me.inLayerToolsEditMode()) {
@@ -146,9 +147,10 @@ Oskari.clazz.define(
                         'position': 'relative'
                     })
                     .append(overlay);
-                overlay.on('mousedown', function (e) {
+                overlay.mousedown(function(e) {
                     e.preventDefault();
                 });
+
             } else {
                 me._inputField.prop('disabled', false);
                 me._searchButton.prop('disabled', false);
@@ -163,7 +165,7 @@ Oskari.clazz.define(
          *
          *
          */
-        _createControlElement: function () {
+        _createControlElement: function() {
             var me = this,
                 conf = me.getConfig(),
                 el;
@@ -188,33 +190,33 @@ Oskari.clazz.define(
             return el;
         },
 
-        _bindUIEvents: function (el) {
+        _bindUIEvents: function(el) {
             var me = this,
                 reqBuilder,
                 sandbox = me.getSandbox(),
                 content = el || me.getElement();
 
             // Toggle map keyboard controls so the user can use arrowkeys in the search...
-            me._inputField.on('focus', function () {
-                reqBuilder = Oskari.requestBuilder(
+            me._inputField.focus(function() {
+                reqBuilder = sandbox.getRequestBuilder(
                     'DisableMapKeyboardMovementRequest'
                 );
                 if (reqBuilder) {
                     sandbox.request(me.getName(), reqBuilder());
                 }
-                // me._checkForKeywordClear();
+                //me._checkForKeywordClear();
             });
-            me._inputField.on('blur', function () {
-                reqBuilder = Oskari.requestBuilder(
+            me._inputField.blur(function() {
+                reqBuilder = sandbox.getRequestBuilder(
                     'EnableMapKeyboardMovementRequest'
                 );
                 if (reqBuilder) {
                     sandbox.request(me.getName(), reqBuilder());
                 }
-                // me._checkForKeywordInsert();
+                //me._checkForKeywordInsert();
             });
 
-            me._inputField.on('keypress', function (event) {
+            me._inputField.keypress(function(event) {
                 if (!me.isInLayerToolsEditMode) {
                     me._checkForEnter(event);
                 }
@@ -222,26 +224,27 @@ Oskari.clazz.define(
 
             // FIXME these are the same thing now...
             // to search button
-            me._searchButton.on('click', function (event) {
+            me._searchButton.click(function(event) {
                 if (!me.isInLayerToolsEditMode) {
                     me._doSearch();
                 }
             });
-            content.find('div.search-right').on('click', function (event) {
+            content.find('div.search-right').click(function(event) {
                 if (!me.isInLayerToolsEditMode) {
                     me._doSearch();
                 }
             });
 
+
             // to close button
-            content.find('div.close').on('click', function (event) {
+            content.find('div.close').click(function(event) {
                 if (!me.isInLayerToolsEditMode) {
                     me._hideSearch();
                     me._inputField.val('');
                     // TODO: this should also unbind the TR tag click listeners?
                 }
             });
-            content.find('div.close-results').on('click', function (event) {
+            content.find('div.close-results').click(function(event) {
                 if (!me.isInLayerToolsEditMode) {
                     me._hideSearch();
                     me._inputField.val('');
@@ -251,7 +254,7 @@ Oskari.clazz.define(
 
             if (me.getConfig() && me.getConfig().toolStyle) {
                 // Hide the results if esc was pressed or if the field is empty.
-                me._inputField.keyup(function (e) {
+                me._inputField.keyup(function(e) {
                     if (e.keyCode === 27 || (e.keyCode === 8 && !jQuery(this).val())) {
                         me._hideSearch();
                     }
@@ -292,9 +295,12 @@ Oskari.clazz.define(
          *      keypress event object from browser
          * Detects if <enter> key was pressed and calls #_doSearch if it was
          */
-        _checkForEnter: function (event) {
+        _checkForEnter: function(event) {
+            var keycode;
             if (window.event) {
+                keycode = window.event.keyCode;
             } else if (event) {
+                keycode = event.which;
             }
 
             if (event.keyCode === 13) {
@@ -308,7 +314,7 @@ Oskari.clazz.define(
          *
          *
          */
-        _doSearch: function () {
+        _doSearch: function() {
             if (this._searchInProgess) {
                 return;
             }
@@ -319,17 +325,17 @@ Oskari.clazz.define(
             var inputField = me.getElement().find('input[type=text]');
             inputField.addClass('search-loading');
             var searchText = inputField.val(),
-                searchCallback = function (msg) {
+                searchCallback = function(msg) {
                     me._showResults(msg);
                     me._enableSearch();
                 },
-                onErrorCallback = function () {
+                onErrorCallback = function() {
                     me._enableSearch();
                 };
             me.service.doSearch(searchText, searchCallback, onErrorCallback);
         },
 
-        _setMarker: function (result) {
+        _setMarker: function(result) {
             var me = this,
                 reqBuilder,
                 sandbox = me.getSandbox(),
@@ -337,7 +343,7 @@ Oskari.clazz.define(
                 lon = typeof result.lon !== 'number' ? parseFloat(result.lon) : result.lon;
 
             // Add new marker
-            reqBuilder = Oskari.requestBuilder(
+            reqBuilder = sandbox.getRequestBuilder(
                 'MapModulePlugin.AddMarkerRequest'
             );
             if (reqBuilder) {
@@ -355,7 +361,7 @@ Oskari.clazz.define(
             }
         },
 
-        _showResults: function (msg) {
+        _showResults: function(msg) {
             var me = this,
                 errorMsg = msg.error,
                 resultsContainer = me.resultsContainer.clone(),
@@ -365,7 +371,7 @@ Oskari.clazz.define(
                 themeColours = mapmodule.getThemeColours(),
                 popupService = me.getSandbox().getService('Oskari.userinterface.component.PopupService');
 
-            /* clear the existing search results */
+            /*clear the existing search results*/
             if (me.popup) {
                 me.popup.close();
                 me.popup = null;
@@ -389,13 +395,13 @@ Oskari.clazz.define(
                     lon = msg.locations[0].lon;
                     lat = msg.locations[0].lat;
                     zoom = msg.locations[0].zoomLevel;
-                    if (msg.locations[0].zoomScale) {
-                        zoom = {scale: msg.locations[0].zoomScale};
+                    if(msg.locations[0].zoomScale) {
+                        zoom = {scale : msg.locations[0].zoomScale};
                     }
 
                     me.getSandbox().request(
                         me.getName(),
-                        Oskari.requestBuilder(
+                        me.getSandbox().getRequestBuilder(
                             'MapMoveRequest'
                         )(lon, lat, zoom)
                     );
@@ -406,9 +412,12 @@ Oskari.clazz.define(
                     var table = me.templateResultsTable.clone(),
                         tableBody = table.find('tbody'),
                         i,
-                        clickFunction = function () {
+                        clickFunction = function() {
                             me._resultClicked(
-                                me.results[parseInt(jQuery(this).attr('data-location'), 10)]
+                                me.results[parseInt(
+                                    jQuery(this).attr('data-location'),
+                                    10
+                                )]
                             );
                             return false;
                         };
@@ -427,8 +436,8 @@ Oskari.clazz.define(
                         lat = resultItem.lat;
                         zoom = resultItem.zoomLevel;
 
-                        if (resultItem.zoomScale) {
-                            zoom = {scale: resultItem.zoomScale};
+                        if(resultItem.zoomScale) {
+                            zoom = {scale : resultItem.zoomScale};
                         }
 
                         var row = me.templateResultsRow.clone(),
@@ -441,7 +450,7 @@ Oskari.clazz.define(
                         xref.attr('data-location', i);
                         xref.attr('title', name);
                         xref.append(name);
-                        xref.on('click', clickFunction);
+                        xref.click(clickFunction);
 
                         jQuery(cells[1]).attr('title', region).append(region);
                         jQuery(cells[2]).attr('title', type).append(type);
@@ -471,10 +480,11 @@ Oskari.clazz.define(
                 }
             }
 
+
             var popupContent = resultsContainer;
             var popupCloseIcon = (mapmodule.getTheme() === 'dark') ? 'icon-close-white' : undefined;
             if (Oskari.util.isMobile()) {
-                // get the sticky buttons into their initial state and kill all popups
+                //get the sticky buttons into their initial state and kill all popups
                 me.getSandbox().postRequestByName('Toolbar.SelectToolButtonRequest', [null, 'mobileToolbar-mobile-toolbar']);
                 popupService.closeAllPopups(true);
             }
@@ -505,14 +515,14 @@ Oskari.clazz.define(
          *
          * @param {Object} result
          */
-        _resultClicked: function (result) {
+        _resultClicked: function(result) {
             var zoom = result.zoomLevel;
-            if (result.zoomScale) {
-                zoom = {scale: result.zoomScale};
+            if(result.zoomScale) {
+                zoom = {scale : result.zoomScale};
             }
             this.getSandbox().request(
                 this.getName(),
-                Oskari.requestBuilder(
+                this.getSandbox().getRequestBuilder(
                     'MapMoveRequest'
                 )(result.lon, result.lat, zoom)
             );
@@ -524,7 +534,7 @@ Oskari.clazz.define(
          * Resets the 'search in progress' flag and removes the loading icon
          * @private
          */
-        _enableSearch: function () {
+        _enableSearch: function() {
             this._searchInProgess = false;
             jQuery('#search-string').removeClass('search-loading');
         },
@@ -533,12 +543,12 @@ Oskari.clazz.define(
          * @private @method _hideSearch
          * Hides the search result and sends out MapModulePlugin.RemoveMarkersRequest
          */
-        _hideSearch: function () {
+        _hideSearch: function() {
             var me = this;
             me.getElement().find('div.results').hide();
             // Send hide marker request
             // This is done just so the user can get rid of the marker somehow...
-            var requestBuilder = Oskari.requestBuilder('MapModulePlugin.RemoveMarkersRequest');
+            var requestBuilder = me.getSandbox().getRequestBuilder('MapModulePlugin.RemoveMarkersRequest');
             if (!requestBuilder) {
                 return;
             }
@@ -554,17 +564,20 @@ Oskari.clazz.define(
          * @param {Object} style
          * @param {jQuery} div
          */
-        changeToolStyle: function (style, div) {
-            var me = this;
+        changeToolStyle: function(style, div) {
+            var me = this,
+                removedClass,
+                addedClass,
+                template;
             div = div || me.getElement();
             if (!div) {
                 return;
             }
 
             if (!style) {
-                style = this.toolStyles['default'];
-            } if (!style.hasOwnProperty('widthLeft')) {
-                style = this.toolStyles[style] ? this.toolStyles[style] : this.toolStyles['default'];
+                style = this.toolStyles["default"];
+            } if (!style.hasOwnProperty("widthLeft")) {
+                style = this.toolStyles[style] ? this.toolStyles[style] : this.toolStyles["default"];
             }
 
             // Set the correct template for the style... ugly.
@@ -577,6 +590,7 @@ Oskari.clazz.define(
                 div.removeClass('published-search-div').addClass(
                     'default-search-div'
                 );
+
 
                 div.empty();
                 me.template.children().clone().appendTo(div);
@@ -604,15 +618,18 @@ Oskari.clazz.define(
                 me._bindUIEvents(div);
             }
 
-            var styleName = style.val,
-                bgLeft = this.getMapModule().getImageUrl('search-tool-' + styleName + '_01.png'),
-                bgMiddle = this.getMapModule().getImageUrl('search-tool-' + styleName + '_02.png'),
-                bgRight = this.getMapModule().getImageUrl('search-tool-' + styleName + '_03.png'),
+            var resourcesPath = this.getMapModule().getImageUrl(),
+                imgPath = resourcesPath + '/mapping/mapmodule/resources/images/',
+                styleName = style.val,
+                bgLeft = imgPath + 'search-tool-' + styleName + '_01.png',
+                bgMiddle = imgPath + 'search-tool-' + styleName + '_02.png',
+                bgRight = imgPath + 'search-tool-' + styleName + '_03.png',
                 left = div.find('div.search-left'),
                 middle = div.find('div.search-middle'),
                 right = div.find('div.search-right'),
                 closeResults = middle.find('div.close-results'),
-                inputField = div.find('input.search-input');
+                inputField = div.find('input.search-input'),
+                searchContainer;
 
             left.css({
                 'background-image': 'url("' + bgLeft + '")',
@@ -623,15 +640,15 @@ Oskari.clazz.define(
                 'width': style.widthRight + 'px'
             });
 
-            // calculate the width for the middle container of the search
+            //calculate the width for the middle container of the search
             var middleWidth = parseInt(jQuery('.search-area-div').css('width')) - style.widthLeft - style.widthRight;
             middle.css({
                 'background-image': 'url("' + bgMiddle + '")',
                 'background-repeat': 'repeat-x',
-                'width': middleWidth + 'px'
+                'width': middleWidth+'px'
             });
 
-            jQuery('.search-area-div').css('width', parseInt(left.outerWidth() + middleWidth + right.outerWidth()) + 'px');
+            jQuery('.search-area-div').css('width', parseInt(left.outerWidth() + middleWidth + right.outerWidth())+'px');
             closeResults.removeClass('icon-close icon-close-white');
 
             // Change the font colour to whitish and the close icon to white
@@ -639,7 +656,7 @@ Oskari.clazz.define(
             if (/dark/.test(styleName)) {
                 closeResults.addClass('icon-close-white');
                 closeResults.css({
-                    'margin-top': '10px'
+                    'margin-top': '8px'
                 });
                 inputField.css({
                     'color': '#ddd'
@@ -667,7 +684,7 @@ Oskari.clazz.define(
          * @param {jQuery} div
          *
          */
-        changeFont: function (fontId, div) {
+        changeFont: function(fontId, div) {
             div = div || this.getElement();
 
             if (!div || !fontId) {
@@ -693,14 +710,14 @@ Oskari.clazz.define(
          *
          * @return {undefined}
          */
-        changeResultListStyle: function (toolStyle, div) {
+        changeResultListStyle: function(toolStyle, div) {
             var cssClass = 'oskari-publisher-search-results-' + toolStyle.val,
                 testRegex = /oskari-publisher-search-results-/;
 
             this.changeCssClasses(cssClass, testRegex, [div]);
         },
 
-        teardownUI: function () {
+        teardownUI : function() {
             if (this.popup) {
                 this.popup.close();
             }
@@ -729,28 +746,27 @@ Oskari.clazz.define(
          * @param {Boolean} modeChanged is the ui mode changed (mobile/desktop)
          */
         redrawUI: function (mapInMobileMode, modeChanged) {
-            var isMobile = mapInMobileMode || Oskari.util.isMobile();
-            if (!this.isVisible()) {
+            if(!this.isVisible()) {
                 // no point in drawing the ui if we are not visible
                 return;
             }
             var me = this;
-            if (!me.getElement()) {
+            if(!me.getElement()) {
                 me._element = me._createControlElement();
             }
 
-            // remove old element
+            //remove old element
             this.teardownUI();
 
-            if (isMobile) {
-                // remove old element
+            if (mapInMobileMode) {
+                //remove old element
                 this.removeFromPluginContainer(this.getElement(), true);
 
                 var mobileDivElement = me.getMapModule().getMobileDiv();
                 me._element.addClass('mobilesearch');
                 // FIXME is index is not first then this fails
                 mobileDivElement.prepend(me._element[0]);
-                me._uiMode = 'mobile';
+                me._uiMode = "mobile";
                 me.changeToolStyle('rounded-light', me._element);
                 me._element.find('div.close-results').remove();
                 me._element.find('input.search-input').css({

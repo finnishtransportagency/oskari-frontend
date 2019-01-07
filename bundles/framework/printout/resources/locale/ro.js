@@ -55,7 +55,8 @@ Oskari.registerLocalization(
                 "tooltip": "Click pe previzualizarea mică pentru a deschide o previzualizare mai mare",
                 "pending": "Previzualizarea va fi actualizată imediat",
                 "notes": {
-                    "extent": "Previzualizarea poate fi folosită pentru a determina dimensiunea hărţii de imprimat"
+                    "extent": "Previzualizarea poate fi folosită pentru a determina dimensiunea hărţii de imprimat",
+                    "restriction": "Nu toate straturile hărţii sunt afişate în previzualizare"
                 }
             },
             "buttons": {

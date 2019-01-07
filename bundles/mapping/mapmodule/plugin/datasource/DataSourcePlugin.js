@@ -71,7 +71,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.DataSourcePlugi
         init: function (sandbox) {
             this.template = jQuery("<div class='oskari-datasource'>" +
                 "<div class='link'><a href='JavaScript:void(0);'></a></div>" +
-                '</div>');
+                "</div>");
             this.templateinfoIcon = jQuery('<div class="icon-info"></div>');
             this.templategroupTemplate = jQuery('<ul style="padding: 0 12px;"></ul>');
             this.templatecontent = jQuery('<div></div>');
@@ -136,7 +136,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.DataSourcePlugi
 
             // TODO: check if added?
             // unbind change listener and remove ui
-            this.element.find('a').off('click');
+            this.element.find('a').unbind('click');
             this.element.remove();
             this.element = undefined;
         },
@@ -205,7 +205,8 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.DataSourcePlugi
          * Creates logo and terms of use links on top of map
          */
         _createUI: function () {
-            var me = this;
+            var me = this,
+                sandbox = me._sandbox;
             // get div where the map is rendered from openlayers
             var parentContainer = jQuery(this._map.div);
             if (!this.element) {
@@ -219,10 +220,11 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.DataSourcePlugi
 
             var link = this.element.find('a');
             link.append(this.localization.link);
-            link.on('click', function () {
+            link.bind('click', function () {
                 me._openDialog();
                 return false;
             });
+
         },
 
         /**
@@ -231,8 +233,11 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.DataSourcePlugi
          * renders pop-up
          */
         _openDialog: function () {
-            var dialog = Oskari.clazz.create('Oskari.userinterface.component.Popup'),
+            var me = this,
+                sandbox = me._sandbox,
+                dialog = Oskari.clazz.create('Oskari.userinterface.component.Popup'),
                 okBtn = dialog.createCloseButton(this.localization.button.close),
+                infoIcon = this.templateinfoIcon.clone(),
                 groupTemplate = this.templategroupTemplate.clone(),
                 selectedLayers = this._getLayers(),
                 group = null,
@@ -246,9 +251,9 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.DataSourcePlugi
             for (i = 0; i < selectedLayers.length; ++i) {
                 layer = selectedLayers[i];
 
-                // compare names for grouping
+                //compare names for grouping
                 if (group !== layer.getOrganizationName()) {
-                    // get organization names
+                    //get organization names
                     group = layer.getOrganizationName();
 
                     heading = this.templateheading.clone();
@@ -281,7 +286,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.DataSourcePlugi
         _getLayers: function () {
             var me = this,
                 selectedLayers = me._sandbox.findAllSelectedMapLayers();
-            // sort the layers
+            //sort the layers
             selectedLayers.sort(function (a, b) {
                 return me._layerListComparator(a, b);
             });
@@ -299,11 +304,11 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.DataSourcePlugi
                 layerName = layer.getName();
             if (layerName) {
                 var layerItem = jQuery('<li>' + layerName + '</li>');
-                // metadata link
+                //metadata link
                 var uuid = layer.getMetadataIdentifier();
                 if (uuid) {
                     var layerIcon = infoIcon.clone();
-                    layerIcon.on('click', function () {
+                    layerIcon.bind('click', function () {
                         me._getMetadataInfoCallback(layer);
                     });
                     layerItem.append(layerIcon);
@@ -326,7 +331,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.DataSourcePlugi
             if (subLayers && subLayers.length > 0) {
                 for (s = 0; s < subLayers.length; s++) {
                     subUuid = subLayers[s].getMetadataIdentifier();
-                    if (subUuid && subUuid !== '' && !additionalUuidsCheck[subUuid]) {
+                    if (subUuid && subUuid !== "" && !additionalUuidsCheck[subUuid]) {
                         additionalUuidsCheck[subUuid] = true;
                         additionalUuids.push({
                             uuid: subUuid
@@ -337,13 +342,13 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.plugin.DataSourcePlugi
             sandbox.postRequestByName('catalogue.ShowMetadataRequest', [{
                 uuid: uuid
             },
-            additionalUuids
-            ]);
+                additionalUuids
+                ]);
         }
     }, {
         /**
          * @property {String[]} protocol array of superclasses as {String}
          * @static
          */
-        'protocol': ['Oskari.mapframework.module.Module', 'Oskari.mapframework.ui.module.common.mapmodule.Plugin']
+        'protocol': ["Oskari.mapframework.module.Module", "Oskari.mapframework.ui.module.common.mapmodule.Plugin"]
     });

@@ -96,7 +96,7 @@ Oskari.clazz.define(
                         this._iconClsPrefix +
                         (formName === 'dot' ? 'point' : formName)
                     );
-                    btnContainer.on('click',
+                    btnContainer.click(
                         me._bindRenderButton(formClazzes[formName])
                     );
                     form.append(btnContainer);

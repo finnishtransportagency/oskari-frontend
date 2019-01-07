@@ -51,10 +51,6 @@ Oskari.registerLocalization(
         "scale_dialog": {
           "title": "Skaala päivitetty",
           "msg":"Karttataso ei ole käytettävissä nykyisellä tarkennustasolla."
-        },
-        "layerFilter": {
-            "tooltip": "Näytä vain vektoritasot",
-            "featuredata": "Vektoritasot"
         }
     }
 });

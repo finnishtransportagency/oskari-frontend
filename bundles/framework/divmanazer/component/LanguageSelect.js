@@ -11,6 +11,7 @@ Oskari.clazz.define(
      * @method create called automatically on construction
      */
     function () {
+        
         var me = this,
             i,
             languages,
@@ -20,7 +21,7 @@ Oskari.clazz.define(
         loc = Oskari.getLocalization('DivManazer');
         if (loc) {
             loc = loc.LanguageSelect;
-        } else {
+        } else  {
             loc = {
                 languages: {}
             };

@@ -7,7 +7,6 @@ Oskari.registerLocalization(
         "desc": "Minu andmed",
         "notLoggedIn": "Süsteemi loginud kasutaja saab näha oma konto andmeid, salvestatud kohti, kaardivaateid, lõimkaarte, analüüse ja andmestikke.",
         "notLoggedInText": "Logi sisse",
-        "register": "Registreeri kasutajaks",
         "tabs": {
             "myviews": {
                 "title": "Minu kaardivaated",

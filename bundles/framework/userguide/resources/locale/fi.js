@@ -34,16 +34,12 @@ Oskari.registerLocalization(
                 "tags": "ohje_karttatasot"
             },
             {
-                "title": "Karttajulkaisu",
-                "tags": "ohje_karttajulkaisu"
+                "title": "Latauskori",
+                "tags": "ohje_latauskori"
             },
             {
-                "title": "Teemakartat",
-                "tags": "ohje_teemakartat"
-            },
-            {
-                "title": "Analyysi",
-                "tags": "ohje_analyysi"
+                "title": "FAQ",
+                "tags": "ohje_faq"
             }
         ],
         "help": {

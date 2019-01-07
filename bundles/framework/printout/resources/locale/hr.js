@@ -55,7 +55,8 @@ Oskari.registerLocalization(
                 "tooltip": "Klikni na mali pregled za otvaranje velikog pregleda",
                 "pending": "Pregled će se uskoro ažurirati.",
                 "notes": {
-                    "extent": "Pregled može poslužiti za ocjenu veličine karte koja se ispisuje"
+                    "extent": "Pregled može poslužiti za ocjenu veličine karte koja se ispisuje",
+                    "restriction": "Svi slojevi karte se ne prikazuju u pregledniku."
                 }
             },
             "buttons": {

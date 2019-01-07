@@ -14,7 +14,7 @@ Manages settings panel when user has entered to the print mode.
 
 ## Bundle configuration
 
-Configuration is available for print preview service urls, legend styling parameters and customized scale selection
+Configuration is available for print preview service urls and legend styling parameters
 (portti_bundle_config_printout_update.sql)
 
             "legend" : {
@@ -23,10 +23,6 @@ Configuration is available for print preview service urls, legend styling parame
                     "legendRowHeight" : 0.02, (Legend row height is 0.02 * Map longer edge)
                     "charsInrow" : 32         (Max length of title row without line break)
                     ...
-                  }
-              },
-              "scaleSelection": true,         (show scale selection)
-              "scales": [500,1000,10000,25000,50000,100000] (define custom scales for scale selection, if not defined defaults to map scales)
 
 
 ## Requests the bundle sends out
@@ -53,7 +49,7 @@ Configuration is available for print preview service urls, legend styling parame
     <td>Ajax</td>
     <td>Ajax requests to backend e.g. action_route = GetProxyRequest</td>
   </tr>
-
+ 
 </table>
 
 ## Events the bundle listens to

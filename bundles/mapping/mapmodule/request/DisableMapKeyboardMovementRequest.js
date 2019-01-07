@@ -15,33 +15,22 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.request.DisableMapKeyb
  * @method create called automatically on construction
  * @static
  */
-    function (options) {
-        this._creator = null;
-        this._options = options;
-    }, {
+function() {
+    this._creator = null;
+}, {
     /** @static @property __name request name */
-        __name: 'DisableMapKeyboardMovementRequest',
-        /**
+    __name : "DisableMapKeyboardMovementRequest",
+    /**
      * @method getName
      * @return {String} request name
      */
-        getName: function () {
-            return this.__name;
-        },
-        getOptions: function (option) {
-            if (option && this._options) {
-                return this._options.findIndex(function (o) {
-                    return o === option;
-                }) > -1;
-            } else if (option) {
-                return true;
-            }
-            return this._options;
-        }
-    }, {
+    getName : function() {
+        return this.__name;
+    }
+}, {
     /**
      * @property {String[]} protocol array of superclasses as {String}
      * @static
      */
-        'protocol': ['Oskari.mapframework.request.Request']
-    });
+    'protocol' : ['Oskari.mapframework.request.Request']
+});

@@ -30,8 +30,8 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplacesimport.UserLayersTab',
         }
     }, {
         __templates: {
-            'main': '<div class="oskari-user-layers-tab"></div>',
-            'link': '<a href="JavaScript:void(0);"></a>'
+            "main": '<div class="oskari-user-layers-tab"></div>',
+            "link": '<a href="JavaScript:void(0);"></a>'
         },
         /**
          * Returns reference to a container that should be shown in personal data
@@ -43,19 +43,16 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplacesimport.UserLayersTab',
             var me = this,
                 sandbox = me.instance.getSandbox(),
                 grid = Oskari.clazz.create('Oskari.userinterface.component.Grid'),
-                addMLrequestBuilder = Oskari.requestBuilder('AddMapLayerRequest'),
-                mapMoveByContentReqBuilder = Oskari.requestBuilder('MapModulePlugin.MapMoveByLayerContentRequest');
+                addMLrequestBuilder = sandbox.getRequestBuilder('AddMapLayerRequest');
 
             grid.setVisibleFields(this.visibleFields);
             // set up the link from name field
             grid.setColumnValueRenderer('name', function (name, data) {
                 var link = me.template.link.clone();
 
-                link.append(name).on('click', function () {
+                link.append(name).bind('click', function () {
                     // add myplacesimport layer to map on name click
                     var request = addMLrequestBuilder(data.id);
-                    sandbox.request(me.instance, request);
-                    request = mapMoveByContentReqBuilder(data.id, true);
                     sandbox.request(me.instance, request);
                     return false;
                 });
@@ -64,7 +61,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplacesimport.UserLayersTab',
             grid.setColumnValueRenderer('edit', function (name, data) {
                 var link = me.template.link.clone();
 
-                link.append(me.loc('tab.grid.editButton')).on('click', function () {
+                link.append(me.loc('tab.grid.editButton')).bind('click', function () {
                     me._editUserLayer(data);
                     return false;
                 });
@@ -73,7 +70,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplacesimport.UserLayersTab',
             grid.setColumnValueRenderer('remove', function (name, data) {
                 var link = me.template.link.clone();
 
-                link.append(me.loc('tab.grid.removeButton')).on('click', function () {
+                link.append(me.loc('tab.grid.removeButton')).bind('click', function () {
                     me._confirmDeleteUserLayer(data);
                     return false;
                 });
@@ -129,15 +126,17 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplacesimport.UserLayersTab',
          * @private
          */
         _deleteUserLayer: function (layerId) {
-            var me = this;
+            var me = this,
+                sandbox = me.instance.sandbox;
 
             // parse actual id from layer id
-            var tokenIndex = layerId.lastIndexOf('_') + 1,
+            var tokenIndex = layerId.lastIndexOf("_") + 1,
                 idParam = layerId.substring(tokenIndex);
 
             jQuery.ajax({
-                url: Oskari.urls.getRoute('DeleteUserLayer'),
+                url: sandbox.getAjaxUrl(),
                 data: {
+                    action_route: 'DeleteUserLayer',
                     id: idParam
                 },
                 type: 'POST',
@@ -179,7 +178,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplacesimport.UserLayersTab',
 
             // TODO: shouldn't maplayerservice send removelayer request by default on remove layer?
             // also we need to do it before service.remove() to avoid problems on other components
-            var removeMLrequestBuilder = Oskari.requestBuilder('RemoveMapLayerRequest'),
+            var removeMLrequestBuilder = sandbox.getRequestBuilder('RemoveMapLayerRequest'),
                 request = removeMLrequestBuilder(layerId);
             sandbox.request(me.instance, request);
             service.removeLayer(layerId);
@@ -225,7 +224,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplacesimport.UserLayersTab',
                     return;
                 }
                 var idDouble = false;
-                for (var i = 0; i < gridModel.data.length; i++) {
+                for (i=0; i < gridModel.data.length; i++) {
                     if (layer.getId() === gridModel.data[i].id) {
                         idDouble = true;
                         break;
@@ -252,16 +251,17 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplacesimport.UserLayersTab',
          * @private
          * @param {Object} data
          */
-        _editUserLayer: function (data) {
+        _editUserLayer: function(data){
             var me = this,
                 styleForm,
                 form,
+                style,
                 dialog,
                 buttons = [],
                 saveBtn,
                 cancelBtn,
                 action = this.instance.getService().getEditLayerUrl(),
-                tokenIndex = data.id.lastIndexOf('_') + 1,
+                tokenIndex = data.id.lastIndexOf("_") + 1,
                 idParam = data.id.substring(tokenIndex);
             me.instance.sandbox.postRequestByName('DisableMapKeyboardMovementRequest');
             styleForm = Oskari.clazz.create('Oskari.mapframework.bundle.myplacesimport.StyleForm', me.instance);
@@ -280,12 +280,14 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplacesimport.UserLayersTab',
             saveBtn.addClass('primary');
             saveBtn.setHandler(function () {
                 var values = styleForm.getValues(),
+                    errors,
                     msg,
+                    layerJson,
                     title,
                     fadeout;
                 values.id = idParam;
 
-                if (!values.name) {
+                if (!values.name){
                     me._showMessage(me.loc('tab.error.title'), me.loc('tab.error.styleName'), false);
                     return;
                 }
@@ -337,8 +339,9 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplacesimport.UserLayersTab',
          * @param {String} id
          * @param {Object} form
          */
-        _setStyleValuesToStyleForm: function (id, form) {
-            var me = this,
+        _setStyleValuesToStyleForm: function (id, form){
+            var style,
+                me = this,
                 action = this.instance.getService().getGetUserLayerStyleUrl();
 
             jQuery.ajax({
@@ -347,11 +350,11 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplacesimport.UserLayersTab',
                 success: function (response) {
                     if (typeof response === 'object') {
                         form.setStyleValues(response);
-                    } else {
+                    }else{
                         me._showMessage(me.loc('tab.error.title'), me.loc('tab.error.getStyle'), false);
                     }
                 },
-                error: function (jqXHR, textStatus) {
+                error: function (jqXHR, textStatus){
                     me._showMessage(me.loc('tab.error.title'), me.loc('tab.error.getStyle'), false);
                 }
             });
@@ -365,7 +368,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplacesimport.UserLayersTab',
          * @param  {String} message
          * @param  {Boolean} fadeout optional default true
          */
-        _showMessage: function (title, message, fadeout) {
+        _showMessage: function (title, message, fadeout){
             fadeout = fadeout !== false;
             var me = this,
                 dialog = Oskari.clazz.create('Oskari.userinterface.component.Popup'),

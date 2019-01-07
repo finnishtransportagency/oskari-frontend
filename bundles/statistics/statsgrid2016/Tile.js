@@ -1,5 +1,15 @@
 
-Oskari.clazz.define('Oskari.statistics.statsgrid.Tile', function (instance, service) {
+Oskari.clazz.define('Oskari.statistics.statsgrid.Tile',
+
+/**
+ * @method create called automatically on construction
+ * @static
+ * @param
+ * {Oskari.mapframework.bundle.layerselection2.LayerSelectionBundleInstance}
+ * instance
+ *      reference to component that created the tile
+ */
+function(instance, service) {
     this.instance = instance;
     this.sb = this.instance.getSandbox();
     this.loc = this.instance.getLocalization();
@@ -9,28 +19,28 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.Tile', function (instance, serv
     this._tileExtensions = {};
     this.flyoutManager = null;
     this._templates = {
-        extraSelection: _.template('<div class="statsgrid-functionality ${ id }" data-view="${ id }"><div class="icon"></div><div class="text">${ label }</div></div>')
+        extraSelection : _.template('<div class="statsgrid-functionality ${ id }" data-view="${ id }"><div class="icon"></div><div class="text">${ label }</div></div>')
     };
 }, {
     /**
      * @method getName
      * @return {String} the name for the component
      */
-    getName: function () {
+    getName : function() {
         return 'Oskari.statistics.statsgrid.Tile';
     },
     /**
      * @method getTitle
      * @return {String} localized text for the title of the tile
      */
-    getTitle: function () {
+    getTitle : function() {
         return this.loc.flyout.title;
     },
     /**
      * @method getDescription
      * @return {String} localized text for the description of the tile
      */
-    getDescription: function () {
+    getDescription : function() {
         return this.instance.getLocalization('desc');
     },
     /**
@@ -44,32 +54,28 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.Tile', function (instance, serv
      *
      * Interface method implementation
      */
-    setEl: function (el, width, height) {
+    setEl : function(el, width, height) {
         this.container = jQuery(el);
     },
     /**
      * @method startPlugin
      * Interface method implementation, calls #createUi()
      */
-    startPlugin: function () {
+    startPlugin : function() {
         this._addTileStyleClasses();
     },
-    setupTools: function (flyoutManager) {
+    setupTools: function ( flyoutManager ) {
         var me = this;
         var tpl = this._templates.extraSelection;
         this.flyoutManager = flyoutManager;
-
-        flyoutManager.flyoutInfo.forEach(function (flyout) {
-            if (flyout.hideTile) {
-                // skip creating link in tile
-                return;
-            }
+        
+        flyoutManager.flyoutInfo.forEach(function(flyout) {
             var tileExtension = jQuery(tpl({
                 id: flyout.id,
-                label: flyout.title
+                label : flyout.title
             }));
             me.extendTile(tileExtension, flyout.id);
-            tileExtension.on('click', function (event) {
+            tileExtension.bind('click', function(event) {
                 event.stopPropagation();
                 flyoutManager.toggle(flyout.id);
             });
@@ -87,10 +93,10 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.Tile', function (instance, serv
     /**
      * Adds a class for the tile so we can programmatically identify which functionality the tile controls.
      */
-    _addTileStyleClasses: function () {
-        var isContainer = !!((this.container && this.instance.mediator));
-        var isBundleId = !!((isContainer && this.instance.mediator.bundleId));
-        var isInstanceId = !!((isContainer && this.instance.mediator.instanceId));
+    _addTileStyleClasses: function() {
+        var isContainer = (this.container && this.instance.mediator) ? true : false;
+        var isBundleId = (isContainer && this.instance.mediator.bundleId) ? true : false;
+        var isInstanceId = (isContainer && this.instance.mediator.instanceId) ? true : false;
 
         if (isInstanceId && !this.container.hasClass(this.instance.mediator.instanceId)) {
             this.container.addClass(this.instance.mediator.instanceId);
@@ -103,25 +109,22 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.Tile', function (instance, serv
      * @method stopPlugin
      * Interface method implementation, clears the container
      */
-    stopPlugin: function () {
+    stopPlugin : function() {
         this.container.empty();
     },
     /**
      * Adds an extra option on the tile
      */
-    extendTile: function (el, type) {
-        var container = this.container.append(el);
-        var extension = container.find(el);
-        this._tileExtensions[type] = extension;
+    extendTile: function (el,type) {
+          var container = this.container.append(el);
+          var extension = container.find(el);
+          this._tileExtensions[type] = extension;
     },
     toggleExtension: function (flyout, shown) {
-        var element = this.getExtensions()[flyout];
-        if (!element) {
-            // flyout not part of tile
-            return;
-        }
 
-        if (!shown) {
+        var element = this.getExtensions()[flyout];
+
+        if ( !shown ) {
             element.removeClass('material-selected');
             return;
         }
@@ -133,9 +136,9 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.Tile', function (instance, serv
     hideExtensions: function () {
         var me = this;
         var extraOptions = me.getExtensions();
-        Object.keys(extraOptions).forEach(function (key) {
+        Object.keys(extraOptions).forEach(function(key) {
             // hide all flyout
-            me.flyoutManager.hide(key);
+            me.flyoutManager.hide( key );
             // hide the tile "extra selection"
             var extension = extraOptions[key];
             extension.removeClass('material-selected');
@@ -150,7 +153,7 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.Tile', function (instance, serv
         var me = this;
         var extraOptions = me.getExtensions();
         this.flyoutManager.init();
-        Object.keys(extraOptions).forEach(function (key) {
+        Object.keys(extraOptions).forEach(function(key) {
             extraOptions[key].removeClass('hidden');
         });
     },
@@ -166,5 +169,5 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.Tile', function (instance, serv
      * @property {String[]} protocol
      * @static
      */
-    'protocol': ['Oskari.userinterface.Tile']
+    'protocol' : ['Oskari.userinterface.Tile']
 });

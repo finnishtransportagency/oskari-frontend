@@ -270,56 +270,56 @@ Oskari.clazz.define("Oskari.userinterface.bundle.ui.UserInterfaceBundle", functi
                 "src": "../../../../bundles/framework/divmanazer/extension/DefaultLayout.js"
             }, {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/divman.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/divman.css"
             }, {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/accordion.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/accordion.css"
             }, {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/tab.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/tab.css"
             }, {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/modal.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/modal.css"
             },
             {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/selectlist.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/selectlist.css"
             }, {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/badge.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/badge.css"
             }, {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/alert.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/alert.css"
             }, {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/formcomponent.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/formcomponent.css"
             }, {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/forminput.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/forminput.css"
             },{
                 "type": "text/css",
                 "src": "../../../../bundles/framework/divmanazer/resources/css/fileinput.css"
             }, {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/grid.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/grid.css"
             }, {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/popup.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/popup.css"
             }, {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/button.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/button.css"
             }, {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/overlay.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/overlay.css"
             }, {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/visualizationform.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/visualizationform.css"
             }, {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/popover.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/popover.css"
             }, {
                 "type": "text/css",
-                "src": "../../../../bundles/framework/divmanazer/resources/scss/colorselect.scss"
+                "src": "../../../../bundles/framework/divmanazer/resources/css/colorselect.css"
             }, {
                 "type": "text/javascript",
                 "src": "../../../../libraries/jquery/plugins/jquery-placeholder/jquery.placeholder.js"

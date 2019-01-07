@@ -96,6 +96,9 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
              * Updates the layerlist
              */
             AfterMapLayerAddEvent: function (event) {
+                if (!this.hasPublishRight(event._mapLayer)) {
+                    //TODO: ?
+                }
                 this.handleLayerSelectionChanged();
             },
 
@@ -134,9 +137,9 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
              */
             MapLayerVisibilityChangedEvent: function (event) {
                 this.handleLayerVisibilityChanged(
-                    event.getMapLayer(),
-                    event.isInScale(),
-                    event.isGeometryMatch()
+                        event.getMapLayer(),
+                        event.isInScale(),
+                        event.isGeometryMatch()
                 );
             },
             'Publisher2.ToolEnabledChangedEvent': function (event) {
@@ -144,18 +147,19 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
                 if (event && event.getTool() && event.getTool().getTool() && event.getTool().getTool().id === 'Oskari.mapframework.bundle.mapmodule.plugin.LayerSelectionPlugin') {
                     if (event.getTool().state.enabled === true) {
                         me._plugin = event.getTool().getPlugin();
-                        // update the plugin's baselayer info in case some of the layers have that ticked.
+                        //update the plugin's baselayer info in case some of the layers have that ticked.
                         var contentPanel = me.getPanel().getContainer();
-                        // find checked baselayerinputs
+                        //find checked baselayerinputs
                         var checkedBaseLayers = contentPanel.find('input.baselayer:checked');
 
-                        _.each(checkedBaseLayers, function (checkbox) {
-                            var id = checkbox.id.replace('checkbox', '');
+                        _.each(checkedBaseLayers, function(checkbox) {
+                            var id = checkbox.id.replace('checkbox','');
                             var layer = me.sandbox.findMapLayerFromSelectedMapLayers(id);
                             if (layer) {
                                 me.getPlugin().addBaseLayer(layer);
                             }
                         });
+
                     } else {
                         me._plugin = null;
                     }
@@ -180,7 +184,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
                 );
                 me.panel.setTitle(me.loc.layerselection.label);
 
-                me._populateMapLayerPanel(true /* isInit */);
+                me._populateMapLayerPanel();
             }
         },
         /**
@@ -195,11 +199,11 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
             }
             return handler.apply(this, [event]);
         },
-        getPlugin: function () {
+        getPlugin: function() {
             return this._plugin;
         },
-        getName: function () {
-            return 'Oskari.mapframework.bundle.publisher2.view.PanelMapLayers';
+        getName: function() {
+            return "Oskari.mapframework.bundle.publisher2.view.PanelMapLayers";
         },
         /**
          * Returns the UI panel and populates it with the data that we want to show the user.
@@ -208,7 +212,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
          * @return {Oskari.userinterface.component.AccordionPanel}
          */
         getPanel: function () {
-            // this._populateMapLayerPanel();
+            //this._populateMapLayerPanel();
             return this.panel;
         },
         /**
@@ -258,19 +262,17 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
          * @method _populateMapLayerPanel
          * @private
          */
-        _populateMapLayerPanel: function (isInit) {
+        _populateMapLayerPanel: function () {
             var me = this,
                 sandbox = this.instance.getSandbox(),
                 contentPanel = this.panel.getContainer();
             contentPanel.empty();
             me.container = contentPanel;
 
-            if (isInit) {
-                // layer tooltip
-                var tooltipCont = this.templateHelp.clone();
-                tooltipCont.attr('title', this.loc.layerselection.tooltip);
-                this.panel.getHeader().append(tooltipCont);
-            }
+            // layer tooltip
+            var tooltipCont = this.templateHelp.clone();
+            tooltipCont.attr('title', this.loc.layerselection.tooltip);
+            contentPanel.append(tooltipCont);
 
             var layers = this._getLayersList(),
                 i,
@@ -278,7 +280,9 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
                 layer,
                 input;
 
+
             for (i = 0; i < layers.length; i += 1) {
+
                 layer = layers[i];
                 var layerContainer = this.templateLayer.clone();
                 layerContainer.attr('data-id', layer.getId());
@@ -292,9 +296,9 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
                     layerContainer.find('div.layer-tool-remove').addClass('icon-close');
 
                     // FIXME create function outside loop. Just have to figure out a way to access the layer...
-                    layerContainer.find('div.layer-tool-remove').on('click', function (e) {
+                    layerContainer.find('div.layer-tool-remove').bind('click', function (e) {
                         var reqName = 'RemoveMapLayerRequest',
-                            builder = Oskari.requestBuilder(reqName),
+                            builder = sandbox.getRequestBuilder(reqName),
                             request = builder(jQuery(e.currentTarget).parents('.layer').attr('data-id')),
                             checkbox = jQuery(e.currentTarget).parents('.layer').find('.baselayer'),
                             isChecked = checkbox.is(':checked');
@@ -304,6 +308,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
                             me.getPlugin().removeBaseLayer(layer);
                         }
                         sandbox.request(me.instance.getName(), request);
+
                     });
                 }
 
@@ -350,10 +355,10 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
         _populateLayerPromotion: function (contentPanel) {
             var me = this,
                 sandbox = this.instance.getSandbox(),
-                addRequestBuilder = Oskari.requestBuilder(
+                addRequestBuilder = sandbox.getRequestBuilder(
                     'AddMapLayerRequest'
                 ),
-                removeRequestBuilder = Oskari.requestBuilder(
+                removeRequestBuilder = sandbox.getRequestBuilder(
                     'RemoveMapLayerRequest'
                 ),
                 closureMagic = function (layer) {
@@ -399,7 +404,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
                         ).append(layer.getName());
                         input = layerContainer.find('input');
                         input.attr('id', 'checkbox' + layer.getId());
-                        input.on('change', closureMagic(layer));
+                        input.change(closureMagic(layer));
                         contentPanel.append(layerContainer);
                     }
                 }
@@ -464,7 +469,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
                 newIndex = (allNodes.length - 1) - newIndex;
                 var sandbox = this.instance.getSandbox(),
                     reqName = 'RearrangeSelectedMapLayerRequest',
-                    builder = Oskari.requestBuilder(reqName),
+                    builder = sandbox.getRequestBuilder(reqName),
                     request = builder(movedId, newIndex);
                 sandbox.request(this.instance.getName(), request);
             }
@@ -482,7 +487,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
         _layerOpacityChanged: function (layer, newOpacity) {
             var sandbox = this.instance.getSandbox(),
                 reqName = 'ChangeMapLayerOpacityRequest',
-                requestBuilder = Oskari.requestBuilder(reqName),
+                requestBuilder = sandbox.getRequestBuilder(reqName),
                 request = requestBuilder(layer.getId(), newOpacity);
 
             sandbox.request(this.instance.getName(), request);
@@ -558,7 +563,8 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
          * viewport
          */
         handleLayerVisibilityChanged: function (layer, isInScale, isGeometryMatch) {
-            var lyrSel = 'li.layer.selected[data-id=' + layer.getId() + ']',
+            var me = this,
+                lyrSel = 'li.layer.selected[data-id=' + layer.getId() + ']',
                 layerDiv = jQuery(this.container).find(lyrSel),
                 footer = layerDiv.find('div.layer-tools'), // teardown previous footer & layer state classes
                 isChecked = footer.find('.baselayer').is(':checked');
@@ -585,11 +591,11 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
             var me = this,
                 sandbox = me.instance.getSandbox(),
                 tools = this.templateLayerFooterTools.clone(), // layer footer
-                visibilityRequestBuilder = Oskari.requestBuilder(
+                visibilityRequestBuilder = sandbox.getRequestBuilder(
                     'MapModulePlugin.MapLayerVisibilityRequest'
                 );
 
-            tools.find('div.layer-visibility a').on('click', function () {
+            tools.find('div.layer-visibility a').bind('click', function () {
                 // send request to hide map layer
                 var request = visibilityRequestBuilder(layer.getId(), false);
                 sandbox.request(me.instance.getName(), request);
@@ -605,7 +611,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
                     layer.selected = isChecked;
                     if (isChecked && me.getPlugin()) {
                         me.getPlugin().addBaseLayer(layer);
-                    } else if (me.getPlugin()) {
+                    } else if(me.getPlugin()){
                         me.getPlugin().removeBaseLayer(layer);
                     }
                 };
@@ -613,8 +619,11 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
 
             var input = tools.find('input.baselayer');
             input.attr('id', 'checkbox' + layer.getId());
-            input.prop('checked', !!isChecked);
-            input.on('change', closureMagic(layer));
+            if (isChecked) {
+                input.attr('checked', 'checked');
+            }
+            input.change(closureMagic(layer));
+
 
             return tools;
         },
@@ -632,12 +641,12 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
             var me = this,
                 sandbox = me.instance.getSandbox(),
                 msg = this.templateLayerFooterHidden.clone(),
-                visibilityRequestBuilder = Oskari.requestBuilder(
+                visibilityRequestBuilder = sandbox.getRequestBuilder(
                     'MapModulePlugin.MapLayerVisibilityRequest'
                 );
 
             msg.addClass('layer-msg-for-hidden');
-            msg.find('a').on('click', function () {
+            msg.find('a').bind('click', function () {
                 // send request to show map layer
                 var request = visibilityRequestBuilder(layer.getId(), true);
                 sandbox.request(me.instance.getName(), request);
@@ -677,9 +686,10 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
 
             toolsDiv.append(footer);
 
-            this._addSlider(layer, layerDiv);
-            var opa = layerDiv.find('div.layer-opacity input.opacity');
+            var slider = this._addSlider(layer, layerDiv),
+                opa = layerDiv.find('div.layer-opacity input.opacity');
             opa.attr('value', layer.getOpacity());
+
         },
 
         /**
@@ -719,7 +729,22 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapLayers',
                 requestName,
                 ['publishable', true]
             );
+        },
+        /**
+         * @method hasPublishRight
+         * Checks if the layer can be published.
+         * @param
+         * {Oskari.mapframework.domain.WmsLayer/Oskari.mapframework.domain.WfsLayer/Oskari.mapframework.domain.VectorLayer}
+         * layer
+         *      layer to check
+         * @return {Boolean} true if the layer can be published
+         */
+        hasPublishRight: function (layer) {
+            // permission might be "no_publication_permission"
+            // or nothing at all
+            return (layer.getPermission('publish') === 'publication_permission_ok');
         }
+
 
     }
 );

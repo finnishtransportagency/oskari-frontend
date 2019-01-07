@@ -19,6 +19,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.personaldata.Flyout',
         this.templateTabHeader = null;
         this.templateTabContent = null;
         this.tabsData = [];
+
     }, {
         /**
          * @method getName
@@ -53,10 +54,10 @@ Oskari.clazz.define('Oskari.mapframework.bundle.personaldata.Flyout',
             var me = this;
             // TODO: move these to correct bundle and use AddTabRequest to add itself to PersonalData
             this.tabsData = {
-                'myviews': Oskari.clazz.create('Oskari.mapframework.bundle.personaldata.MyViewsTab', me.instance),
-                'publishedmaps': Oskari.clazz.create('Oskari.mapframework.bundle.personaldata.PublishedMapsTab', me.instance),
+                "myviews": Oskari.clazz.create('Oskari.mapframework.bundle.personaldata.MyViewsTab', me.instance),
+                "publishedmaps": Oskari.clazz.create('Oskari.mapframework.bundle.personaldata.PublishedMapsTab', me.instance),
                 // TODO should we pass conf to accounttab here?
-                'account': Oskari.clazz.create('Oskari.mapframework.bundle.personaldata.AccountTab', me.instance)
+                "account": Oskari.clazz.create('Oskari.mapframework.bundle.personaldata.AccountTab', me.instance)
             };
         },
         /**
@@ -103,28 +104,30 @@ Oskari.clazz.define('Oskari.mapframework.bundle.personaldata.Flyout',
          * Creates the UI for a fresh start
          */
         createUi: function () {
-            var me = this;
-            // clear container
-            var flyout = jQuery(this.container);
+            var me = this,
+                sandbox = me.instance.getSandbox(),
+                flyout = jQuery(this.container), // clear container
+                tabId,
+                tab,
+                panel,
+                notLoggedIn = this.instance.getLocalization('notLoggedIn'),
+                notLoggedInText = '',
+                notLoggedInFullText = notLoggedIn,
+                conf = this.instance.conf,
+                lang = Oskari.getLang();
 
-            var notLoggedInFullText = this.instance.getLocalization('notLoggedIn');
-            var conf = this.instance.conf || {};
 
-            // in analyse/publisher it's conf.loginUrl - in here it's conf.logInUrl !!
-            var loginUrl = Oskari.getLocalized(conf.logInUrl) || Oskari.urls.getLocation('login');
-            if (loginUrl) {
-                notLoggedInFullText += '<br/><br/>' +
-                    '<a href="' + loginUrl + '">' + this.instance.getLocalization('notLoggedInText') + '</a>';
+            if(conf.logInUrl) {
+                //loginUrl = Oskari.getLocalized(conf.loginUrl); !!!!
+                notLoggedInText = '<a href="' + Oskari.getLocalized(conf.logInUrl) + '">' + this.instance.getLocalization('notLoggedInText') + '</a>';
             }
-            var registerUrl = Oskari.urls.getLocation('register');
-            if (registerUrl) {
-                notLoggedInFullText += '<br/><br/>' +
-                    '<a href="' + registerUrl + '">' + this.instance.getLocalization('register') + '</a>';
-            }
+
+            notLoggedInFullText += '<br/><br/>' + notLoggedInText;
 
             flyout.empty();
 
-            this.tabsContainer = Oskari.clazz.create('Oskari.userinterface.component.TabContainer', notLoggedInFullText);
+            this.tabsContainer = Oskari.clazz.create('Oskari.userinterface.component.TabContainer',
+                notLoggedInFullText);
 
             this.tabsContainer.insertTo(flyout);
 
@@ -133,19 +136,21 @@ Oskari.clazz.define('Oskari.mapframework.bundle.personaldata.Flyout',
             }
 
             // now we can presume user is logged in
-            Object.keys(this.tabsData).forEach(function (tabId) {
-                var tab = me.tabsData[tabId];
-                var panel = Oskari.clazz.create('Oskari.userinterface.component.TabPanel');
-                panel.setTitle(tab.getTitle());
-                panel.setId(tabId);
-                tab.addTabContent(panel.getContainer());
+            for (tabId in this.tabsData) {
+                if (this.tabsData.hasOwnProperty(tabId)) {
+                    tab = this.tabsData[tabId];
+                    panel = Oskari.clazz.create('Oskari.userinterface.component.TabPanel');
+                    panel.setTitle(tab.getTitle());
+                    panel.setId(tabId);
+                    tab.addTabContent(panel.getContainer());
 
-                // binds tab to events
-                if (tab.bindEvents) {
-                    tab.bindEvents();
+                    // binds tab to events
+                    if (tab.bindEvents) {
+                        tab.bindEvents();
+                    }
+                    this.tabsContainer.addPanel(panel);
                 }
-                me.tabsContainer.addPanel(panel);
-            });
+            }
         },
 
         /**
@@ -153,10 +158,12 @@ Oskari.clazz.define('Oskari.mapframework.bundle.personaldata.Flyout',
          *
          */
         addTab: function (item) {
+            var sandbox = this.instance.getSandbox(),
+                panel;
             if (!Oskari.user().isLoggedIn()) {
                 return;
             }
-            var panel = Oskari.clazz.create('Oskari.userinterface.component.TabPanel');
+            panel = Oskari.clazz.create('Oskari.userinterface.component.TabPanel');
             panel.setTitle(item.title);
             panel.setContent(item.content);
             panel.setId(item.id);

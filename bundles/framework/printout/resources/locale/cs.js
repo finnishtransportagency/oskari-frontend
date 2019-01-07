@@ -55,7 +55,8 @@ Oskari.registerLocalization(
                 "tooltip": "Klikněte na malý náhled pro zvětšení",
                 "pending": "Náhled bude rychle aktualizován",
                 "notes": {
-                    "extent": "Náhled lze použít pro výpočet rozsahu mapy výtisku"
+                    "extent": "Náhled lze použít pro výpočet rozsahu mapy výtisku",
+                    "restriction": "V náhledu nejsou zobrazeny všechny mapové vrstvy"
                 }
             },
             "buttons": {

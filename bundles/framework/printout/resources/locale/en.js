@@ -3,8 +3,8 @@ Oskari.registerLocalization(
     "lang": "en",
     "key": "Printout",
     "value": {
-        "title": "Print",
-        "flyouttitle": "Print",
+        "title": "Print Map View",
+        "flyouttitle": "Print Map View",
         "desc": "",
         "btnTooltip": "Print the current map view to a PNG image or a PDF file.",
         "BasicView": {
@@ -55,7 +55,8 @@ Oskari.registerLocalization(
                 "tooltip": "Click the preview image to open a larger image in another window.",
                 "pending": "The preview image will be updated shortly.",
                 "notes": {
-                    "extent": "Check the map extent area in the preview image."
+                    "extent": "Check the map extent area in the preview image.",
+                    "restriction": "Only a background map is shown in the preview image."
                 }
             },
             "buttons": {
@@ -98,8 +99,8 @@ Oskari.registerLocalization(
                 "options": [
                     {
                         "id": "pageLogo",
-                        "label": "Include logo",
-                        "tooltip": "You can hide the logo if necessary.",
+                        "label": "Show Finnish geoportal Paikkatietoikkuna's logo in the printout.",
+                        "tooltip": "You can hide Finnish geoportal Paikkatietoikkuna's logo if necessary.",
                         "checked": "checked"
                     },
                     {
@@ -110,7 +111,7 @@ Oskari.registerLocalization(
                     },
                     {
                         "id": "pageDate",
-                        "label": "Include current date",
+                        "label": "Show a date in the map printout.",
                         "tooltip": "You can add a date to the printout.",
                         "checked": "checked"
                     }
@@ -124,18 +125,10 @@ Oskari.registerLocalization(
                 "nohelp": "There is no help available.",
                 "saveFailed": "Printing the map view not succeeded. Please try again later.",
                 "nameIllegalCharacters": "The name contains disallowed characters. Allowed characters are the letters a-z as well as å, ä and ö, numbers, backspaces and hyphens."
-            },
-            "scale": {
-                "label": "Scale",
-                "tooltip": "Specify the scale to be used for printing",
-                "mapScale": "Use the map scale",
-                "definedScale": "Select a scale",
-                "unsupportedLayersMessage": "The following maplayers are not shown on the printout",
-                "unsupportedLayersTitle": "The printout does not show all layers"
             }
         },
         "StartView": {
-            "text": "You can make a print of your map in PDF and PNG formats.",
+            "text": "You can print out the Map view you just created as a PNG image or a PDF file.",
             "info": {
                 "maxLayers": "You can use at most eight map layers in the printout.",
                 "printoutProcessingTime": "Printing out the map view may take some time when multiple layers are selected."

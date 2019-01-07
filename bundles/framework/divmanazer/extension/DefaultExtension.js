@@ -108,7 +108,7 @@ Oskari.clazz.define('Oskari.userinterface.extension.DefaultExtension',
                 sandbox.registerAsStateful(this.mediator.bundleId, this);
             }
 
-            request = Oskari.requestBuilder(
+            request = sandbox.getRequestBuilder(
                 'userinterface.AddExtensionRequest'
             )(this);
 
@@ -134,7 +134,7 @@ Oskari.clazz.define('Oskari.userinterface.extension.DefaultExtension',
         stop: function () {
             var sandbox = this.sandbox,
                 /* sandbox cleanup */
-                request = Oskari.requestBuilder(
+                request = sandbox.getRequestBuilder(
                     'userinterface.RemoveExtensionRequest'
                 )(this);
             sandbox.request(this, request);
@@ -161,7 +161,7 @@ Oskari.clazz.define('Oskari.userinterface.extension.DefaultExtension',
 
             for (p in me.requestHandlers) {
                 if (me.requestHandlers.hasOwnProperty(p)) {
-                    sandbox.requestHandler(p, this);
+                    sandbox.addRequestHandler(p, this);
                 }
             }
             for (p in me.eventHandlers) {
@@ -344,9 +344,12 @@ Oskari.clazz.define('Oskari.userinterface.extension.DefaultExtension',
         },
 
         setDefaultTile: function (txt) {
-            var tile = Oskari.clazz.create('Oskari.userinterface.extension.DefaultTile', this, {
-                title: txt || ''
-            });
+            var tileCls = Oskari.cls().extend(
+                    'Oskari.userinterface.extension.DefaultTile'
+                ),
+                tile = tileCls.create(this, {
+                    title: txt || ''
+                });
             this.plugins['Oskari.userinterface.Tile'] = tile;
             return tile;
         },
@@ -377,7 +380,7 @@ Oskari.clazz.define('Oskari.userinterface.extension.DefaultExtension',
          */
         issue: function (requestName) {
             var args = this.slicer.apply(arguments, [1]),
-                builder = Oskari.requestBuilder(requestName),
+                builder = this.getSandbox().getRequestBuilder(requestName),
                 request = builder.apply(builder, args);
 
             return this.getSandbox().request(this.getExtension(), request);
@@ -388,7 +391,7 @@ Oskari.clazz.define('Oskari.userinterface.extension.DefaultExtension',
          */
         notify: function (eventName) {
             var args = this.slicer.apply(arguments, [1]),
-                builder = Oskari.eventBuilder(eventName),
+                builder = this.getSandbox().getEventBuilder(eventName),
                 evt = builder.apply(builder, args);
 
             return this.getSandbox().notifyAll(evt);

@@ -1,4 +1,4 @@
-# Index Map Plugin
+# Index Map
 
 ## Description
 

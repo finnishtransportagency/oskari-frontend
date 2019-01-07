@@ -90,6 +90,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.printout.Flyout',
          */
         setState: function (state) {
             this.state = state;
+
         },
         /**
          * @method createUi
@@ -97,6 +98,10 @@ Oskari.clazz.define('Oskari.mapframework.bundle.printout.Flyout',
          * Selects the view to show based on user (guest/loggedin)
          */
         createUi: function () {
+            var me = this;
+
+            var flyout = jQuery(this.container);
+
             this.view = Oskari.clazz.create('Oskari.mapframework.bundle.printout.view.StartView',
                 this.instance,
                 this.instance.getLocalization('StartView'));

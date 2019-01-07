@@ -6,7 +6,7 @@
  * See Oskari.framework.bundle.admin-layerrights.AdminLayerRightsBundle for bundle definition.
  *
  */
-Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsBundleInstance',
+Oskari.clazz.define("Oskari.framework.bundle.admin-layerrights.AdminLayerRightsBundleInstance",
 
     /**
      * @method create called automatically on construction
@@ -14,6 +14,7 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
      */
 
     function () {
+        
         this.sandbox = null;
         this.started = false;
         this.plugins = {};
@@ -31,7 +32,8 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * @method getName
          * @return {String} the name for the component
          */
-        'getName': function () {
+        "getName": function () {
+            
             return this.__name;
         },
 
@@ -41,6 +43,7 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * Sets the sandbox reference to this component
          */
         setSandbox: function (sandbox) {
+            
             this.sandbox = sandbox;
         },
 
@@ -49,6 +52,7 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * @return {Oskari.Sandbox}
          */
         getSandbox: function () {
+            
             return this.sandbox;
         },
 
@@ -66,6 +70,7 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          *      structure and if parameter key is given
          */
         getLocalization: function (key) {
+            
             if (!this._localization) {
                 this._localization = Oskari.getLocalization(this.getName());
             }
@@ -79,11 +84,13 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * @method start
          * implements BundleInstance protocol start methdod
          */
-        'start': function () {
+        "start": function () {
+            
             var me = this,
                 conf = me.conf,
                 sandboxName = (conf ? conf.sandbox : null) || 'sandbox',
-                sandbox = Oskari.getSandbox(sandboxName);
+                sandbox = Oskari.getSandbox(sandboxName),
+                ajaxUrl = null;
 
             if (me.started) {
                 return;
@@ -95,14 +102,22 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
 
             me.localization = Oskari.getLocalization(me.getName());
 
+            // TODO ajaxUrl can only have the baseUrl as we have multiple actionroutes
+            if (conf && conf.url) {
+                ajaxUrl = this.conf.url;
+            } else {
+                ajaxUrl = sandbox.getAjaxUrl() + 'action_route=GetAllRoles';
+            }
+
+
             sandbox.register(me);
             for (var p in me.eventHandlers) {
                 sandbox.registerForEventByName(me, p);
             }
 
-            // Let's extend UI
+            //Let's extend UI
             var reqName = 'userinterface.AddExtensionRequest',
-                reqBuilder = Oskari.requestBuilder(reqName),
+                reqBuilder = sandbox.getRequestBuilder(reqName),
                 request = reqBuilder(this);
             sandbox.request(this, request);
 
@@ -116,7 +131,8 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * @method init
          * implements Module protocol init method - does nothing atm
          */
-        'init': function () {
+        "init": function () {
+            
             return null;
         },
 
@@ -125,8 +141,8 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * implements BundleInstance protocol update method - does
          * nothing atm
          */
-        'update': function () {
-
+        "update": function () {
+            
         },
 
         /**
@@ -138,7 +154,8 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          */
         onEvent: function (event) {
             var handler = this.eventHandlers[event.getName()];
-            if (!handler) { return; }
+            if (!handler)
+                return;
 
             return handler.apply(this, [event]);
         },
@@ -157,11 +174,12 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * @method stop
          * implements BundleInstance protocol stop method
          */
-        'stop': function () {
+        "stop": function () {
+            
             var me = this,
                 sandbox = me.sandbox(),
                 reqName = 'userinterface.RemoveExtensionRequest',
-                reqBuilder = Oskari.requestBuilder(reqName);
+                reqBuilder = sandbox.getRequestBuilder(reqName);
 
             for (var p in me.eventHandlers) {
                 sandbox.unregisterFromEventByName(me, p);
@@ -183,6 +201,7 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * Oskari.mapframework.bundle.publisher.Tile
          */
         startExtension: function () {
+            
             this.plugins['Oskari.userinterface.Flyout'] =
                 Oskari.clazz.create('Oskari.framework.bundle.admin-layerrights.Flyout', this);
             this.plugins['Oskari.userinterface.Tile'] =
@@ -196,6 +215,7 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * Clears references to flyout and tile
          */
         stopExtension: function () {
+            
             this.plugins['Oskari.userinterface.Flyout'] = null;
             this.plugins['Oskari.userinterface.Tile'] = null;
         },
@@ -207,6 +227,7 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * @return {Object} references to flyout and tile
          */
         getPlugins: function () {
+            
             return this.plugins;
         },
 
@@ -215,6 +236,7 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * @return {String} localized text for the title of the component
          */
         getTitle: function () {
+            
             return this.getLocalization('title');
         },
 
@@ -224,6 +246,7 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * component
          */
         getDescription: function () {
+            
             return this.getLocalization('desc');
         },
 
@@ -232,6 +255,7 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * (re)creates the UI for "selected layers" functionality
          */
         createUi: function () {
+            
             var me = this;
             me.plugins['Oskari.userinterface.Flyout'].setContent();
             me.plugins['Oskari.userinterface.Tile'].refresh();
@@ -242,6 +266,7 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * @param {Object} state bundle state as JSON
          */
         setState: function (state) {
+            
             this.plugins['Oskari.userinterface.Flyout'].setState(state);
         },
 
@@ -250,6 +275,7 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * @return {Object} bundle state as JSON
          */
         getState: function () {
+            
             return this.plugins['Oskari.userinterface.Flyout'].getState();
         }
     }, {
@@ -258,7 +284,7 @@ Oskari.clazz.define('Oskari.framework.bundle.admin-layerrights.AdminLayerRightsB
          * @property {String[]} protocol
          * @static
          */
-        'protocol': [
+        "protocol": [
             'Oskari.bundle.BundleInstance',
             'Oskari.mapframework.module.Module',
             'Oskari.userinterface.Extension'

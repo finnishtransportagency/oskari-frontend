@@ -3,7 +3,7 @@
  *
  *
  */
-Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
+Oskari.clazz.define("Oskari.mapframework.bundle.layerselector2.view.Layer",
 
     /**
      * @method create called automatically on construction
@@ -11,6 +11,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
      */
 
     function (layer, sandbox, localization) {
+        
         this.sandbox = sandbox;
         this.localization = localization;
         this.layer = layer;
@@ -18,12 +19,11 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
         this.ui = this._createLayerContainer(layer);
     }, {
         __template: '<div class="layer"><input type="checkbox" /> ' +
-                    '<div class="layer-tools">' +
+                    '<div class="layer-tools">'+
                     '   <div class="layer-not-supported icon-warning-light" title="" ></div>' +
                     '   <div class="layer-backendstatus-icon backendstatus-unknown" title=""></div>' +
-                    '   <div class="layer-icon-secondary"></div>' +
-                    '   <div class="layer-icon"></div>' +
-                    '   <div class="layer-info"></div>' +
+                    '   <div class="layer-icon"></div>'+
+                    '   <div class="layer-info"></div>'+
                     '</div>' +
                     '<div class="layer-title"></div>' +
         '</div>',
@@ -32,9 +32,11 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
          * @return {String} layer id
          */
         getId: function () {
+            
             return this.layer.getId();
         },
         setVisible: function (bln) {
+            
             // TODO assúme boolean and clean up everyhting that passes somehting else
             // checking since we dont assume param is boolean
             if (bln) {
@@ -44,15 +46,17 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
             }
         },
         setSelected: function (isSelected) {
+            
             // TODO assúme boolean and clean up everyhting that passes somehting else
             // checking since we dont assume param is boolean
-            this.ui.find('input').prop('checked', !!isSelected);
+            this.ui.find('input').attr('checked', !!isSelected);
         },
 
         /**
          * @method updateLayerContent
          */
         updateLayerContent: function (layer) {
+            
             /* set title */
             var newName = layer.getName(),
                 /* set/clear alert if required */
@@ -70,7 +74,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
 
             /* set sticky */
             if (layer.isSticky()) {
-                this.ui.find('input').prop('disabled', true);
+                this.ui.find('input').attr('disabled', 'disabled');
             }
 
             if (clsForPrevBackendStatus) {
@@ -93,8 +97,10 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
                 elBackendStatus.attr('title', '');
             }
             this.backendStatus = currBackendStatus;
+
         },
         getContainer: function () {
+            
             return this.ui;
         },
         /**
@@ -104,6 +110,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
          * @param {Oskari.mapframework.domain.WmsLayer/Oskari.mapframework.domain.WfsLayer/Oskari.mapframework.domain.VectorLayer/Object} layer to render
          */
         _createLayerContainer: function (layer) {
+            
             var me = this,
                 sandbox = me.sandbox,
                 // create from layer template
@@ -122,10 +129,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
                 checkbox,
                 elBackendStatus,
                 mapLayerId,
-                layerInfo,
-                subLmeta;
-
-            var secondaryIcon = tools.find('div.layer-icon-secondary');
+                layerInfo;
 
             icon.addClass(layer.getIconClassname());
 
@@ -139,18 +143,16 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
                 // I'll just leave this like it was on old implementation
                 icon.attr('title', tooltips['type-wms']);
             } else if (layer.isLayerOfType('WFS')) {
-                if (layer.isManualRefresh()) {
+                if(layer.isManualRefresh()) {
                     icon.attr('title', tooltips['type-wfs-manual']);
-                } else {
+                }
+                else {
                     icon.attr('title', tooltips['type-wfs']);
                 }
             } else if (layer.isLayerOfType('VECTOR')) {
                 icon.attr('title', tooltips['type-wms']);
             }
-            if (layer.hasTimeseries()) {
-                secondaryIcon.addClass('layer-timeseries-disabled');
-                secondaryIcon.attr('title', tooltips['type-timeseries']);
-            }
+
 
             if (!layer.getMetadataIdentifier()) {
                 subLayers = layer.getSubLayers();
@@ -159,7 +161,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
                     subLmeta = true;
                     for (s = 0; s < subLayers.length; s += 1) {
                         subUuid = subLayers[s].getMetadataIdentifier();
-                        if (!subUuid || subUuid === '') {
+                        if (!subUuid || subUuid === "") {
                             subLmeta = false;
                             break;
                         }
@@ -169,7 +171,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
             if (layer.getMetadataIdentifier() || subLmeta) {
                 layerInfo = tools.find('div.layer-info');
                 layerInfo.addClass('icon-info');
-                layerInfo.on('click', function () {
+                layerInfo.click(function () {
                     rn = 'catalogue.ShowMetadataRequest';
                     uuid = layer.getMetadataIdentifier();
                     additionalUuids = [];
@@ -179,19 +181,21 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
                     if (subLayers && subLayers.length > 0) {
                         for (s = 0; s < subLayers.length; s += 1) {
                             subUuid = subLayers[s].getMetadataIdentifier();
-                            if (subUuid && subUuid !== '' && !additionalUuidsCheck[subUuid]) {
+                            if (subUuid && subUuid !== "" && !additionalUuidsCheck[subUuid]) {
                                 additionalUuidsCheck[subUuid] = true;
                                 additionalUuids.push({
                                     uuid: subUuid
                                 });
+
                             }
                         }
+
                     }
 
                     sandbox.postRequestByName(rn, [{
-                        uuid: uuid
-                    },
-                    additionalUuids
+                            uuid: uuid
+                        },
+                        additionalUuids
                     ]);
                 });
             }
@@ -201,12 +205,12 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
             layerDiv.find('input').attr('id', 'oskari_layerselector2_layerlist_checkbox_layerid_' + layer.getId());
             layerDiv.find('.layer-title')
                 .append(layer.getName())
-                .on('click', function () {
+                .click(function(){
                     layerDiv.find('input').prop('checked', !layerDiv.find('input').prop('checked')).trigger('change');
                 })
                 .toggleClass('not-supported', !layer.isSupported(sandbox.getMap().getSrsName()));
 
-            layerDiv.find('input').on('change', function () {
+            layerDiv.find('input').change(function () {
                 checkbox = jQuery(this);
                 if (checkbox.is(':checked')) {
                     sandbox.postRequestByName('AddMapLayerRequest', [layer.getId()]);
@@ -217,7 +221,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
 
             /* set sticky */
             if (layer.isSticky()) {
-                layerDiv.find('input').prop('disabled', true);
+                layerDiv.find('input').attr('disabled', 'disabled');
             }
 
             /*
@@ -235,7 +239,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.view.Layer',
                     elBackendStatus.attr('title', tooltip);
                 }
             }
-            elBackendStatus.on('click', function () {
+            elBackendStatus.click(function () {
                 mapLayerId = layer.getId();
                 sandbox.postRequestByName('ShowMapLayerInfoRequest', [
                     mapLayerId

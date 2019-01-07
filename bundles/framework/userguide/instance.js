@@ -27,13 +27,15 @@ Oskari.clazz.define('Oskari.mapframework.bundle.userguide.UserGuideBundleInstanc
          * implements BundleInstance protocol start methdod
          */
         afterStart: function (sandbox) {
+            var title = this.getLocalization('title');
+
             var conf = this.getConfiguration(),
-                sandboxName = (conf ? conf.sandbox : null) || 'sandbox';
-            sandbox = Oskari.getSandbox(sandboxName);
+                sandboxName = (conf ? conf.sandbox : null) || 'sandbox',
+                sandbox = Oskari.getSandbox(sandboxName);
 
             // request
             this._requestHandlers['userguide.ShowUserGuideRequest'] = Oskari.clazz.create('Oskari.mapframework.bundle.userguide.request.ShowUserGuideRequestHandler', sandbox, this);
-            sandbox.requestHandler('userguide.ShowUserGuideRequest', this._requestHandlers['userguide.ShowUserGuideRequest']);
+            sandbox.addRequestHandler('userguide.ShowUserGuideRequest', this._requestHandlers['userguide.ShowUserGuideRequest']);
 
             // draw ui
             this.plugins['Oskari.userinterface.Flyout'].createUi();
@@ -83,6 +85,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.userguide.UserGuideBundleInstanc
                 helpContentPart = me.getLocalization('help').contentPart || helpContentPart;
             }
 
+
             function closureMagic (tagsTxt) {
                 return function (isSuccess, pContent) {
                     var content = pContent,
@@ -112,11 +115,12 @@ Oskari.clazz.define('Oskari.mapframework.bundle.userguide.UserGuideBundleInstanc
             }
         },
 
+
         /**
          * @method stop
          * implements BundleInstance protocol stop method
          */
-        'stop': function () {
+        'stop': function() {
             var sandbox = this.sandbox(),
                 p;
             for (p in this.eventHandlers) {
@@ -128,11 +132,11 @@ Oskari.clazz.define('Oskari.mapframework.bundle.userguide.UserGuideBundleInstanc
             /* request handler cleanup */
             sandbox.removeRequestHandler('userguide.ShowUserGuideRequest', this._requestHandlers['userguide.ShowUserGuideRequest']);
 
-            var request = Oskari.requestBuilder('userinterface.RemoveExtensionRequest')(this);
+            var request = sandbox.getRequestBuilder('userinterface.RemoveExtensionRequest')(this);
 
             sandbox.request(this, request);
 
-            // this.sandbox.unregisterStateful(this.mediator.bundleId);
+            //this.sandbox.unregisterStateful(this.mediator.bundleId);
             this.sandbox.unregister(this);
             this.started = false;
         }

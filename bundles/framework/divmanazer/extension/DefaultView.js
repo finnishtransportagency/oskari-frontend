@@ -15,6 +15,7 @@ Oskari.clazz.define('Oskari.userinterface.extension.DefaultView',
      */
 
     function (instance, locale) {
+
         /* @property extension instance */
         this.instance = instance;
 
@@ -23,6 +24,7 @@ Oskari.clazz.define('Oskari.userinterface.extension.DefaultView',
 
         /* @property container the DIV element */
         this.container = null;
+
     }, {
         /**
          * @method getName

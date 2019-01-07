@@ -320,16 +320,11 @@ Oskari.registerLocalization(
             }
         },
         "fileInput": {
-            "fileUpload": "Dra {files, plural, one {fil} other {filerna}} hit, eller",
-            "link":"välj genom att bläddra.",
-            "uploading":"Laddar",
-            "success":"Lyckades",
-            "error":"Fel!",
-            "invalidType": "Filformatet är inte tillåtet.",
-            "allowedExtensions": "Tillåtna filändelser: {allowedExtensions}.",
-            "multipleNotAllowed": "Endast en fil kan laddas upp.",
-            "fileSize": "Den valda filen är för stor. Den högsta tillåtna storleken är {size, number} Mb.",
-            "noFiles": "Ingen fil vald."
+            "fileupload": "Raahaa lähtöaineiston sisältävä tiedosto tähän tai",
+            "link":"valitse selaamalla",
+            "uploading":"Ladataan",
+            "success":"Valmis",
+            "error":"Virhe!",
         }
     }
 });

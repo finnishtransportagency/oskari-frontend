@@ -6,11 +6,24 @@
  *
  * Add this to startupsequence to get this bundle started
  {
+            title : 'myfirstbundle',
+            fi : 'myfirstbundle',
+            sv : '?',
+            en : '?',
             bundlename : 'myfirstbundle',
-            bundleinstancename : 'myfirstbundle'
+            bundleinstancename : 'myfirstbundle',
+            metadata : {
+                "Import-Bundle" : {
+                    "myfirstbundle" : {
+                        bundlePath : '/<path to>/packages/sample/bundle/'
+                    }
+                },
+                "Require-Bundle-Instance" : []
+            },
+            instanceProps : {}
         }
  */
-Oskari.clazz.define('Oskari.sample.bundle.myfirstbundle.SimpleHelloWorldBundleInstance',
+Oskari.clazz.define("Oskari.sample.bundle.myfirstbundle.SimpleHelloWorldBundleInstance",
 
     /**
      * @method create called automatically on construction

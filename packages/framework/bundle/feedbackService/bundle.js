@@ -1,9 +1,9 @@
 /**
- * @class Oskari.mapframework.bundle.feedbackService.FeedbackServiceBundle
+ * @class Oskari.mapframework.bundle.feedbackService.FeedbackServiceBundleInstance
  *
  * Definition for bundle. See source for details.
  */
-Oskari.clazz.define("Oskari.mapframework.bundle.feedbackService.FeedbackServiceBundle",
+Oskari.clazz.define("Oskari.mapframework.bundle.feedbackService.FeedbackServiceBundleInstance",
     function () {}, {
     "create": function () {
         return Oskari.clazz.create("Oskari.mapframework.bundle.feedbackService.FeedbackServiceBundleInstance");
@@ -84,4 +84,4 @@ Oskari.clazz.define("Oskari.mapframework.bundle.feedbackService.FeedbackServiceB
 
 });
 
-Oskari.bundle_manager.installBundleClass("feedbackService", "Oskari.mapframework.bundle.feedbackService.FeedbackServiceBundle");
+Oskari.bundle_manager.installBundleClass("feedbackService", "Oskari.mapframework.bundle.feedbackService.FeedbackServiceBundleInstance");

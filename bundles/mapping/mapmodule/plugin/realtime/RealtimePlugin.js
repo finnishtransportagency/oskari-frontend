@@ -124,11 +124,11 @@ Oskari.clazz.define(
             var me = this,
                 sandbox = me.getSandbox(),
                 refreshRate = this._getRefreshRate(layer.getRefreshRate()),
-                reqB = Oskari.requestBuilder(
+                reqB = sandbox.getRequestBuilder(
                     'MapModulePlugin.MapLayerUpdateRequest'
                 ),
                 req = (reqB ? reqB(layer.getId(), true) : undefined),
-                evtB = Oskari.eventBuilder('Realtime.RefreshLayerEvent'),
+                evtB = sandbox.getEventBuilder('Realtime.RefreshLayerEvent'),
                 evt = (evtB ? evtB(layer) : undefined),
                 interval;
 

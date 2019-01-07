@@ -28,10 +28,6 @@ Oskari.registerLocalization(
             "message": "Bara den översta kan kontrolleras.",
             "ok": "OK"
         },
-        "layerFilter": {
-            "tooltip": "Visa endast kartlager med tidsserier.",
-            "timeseries": "Tidsserier"
-        },
         "d3TimeDef": {
             "dateTime": "%A den %d %B %Y %X",
             "date": "%Y-%m-%d",

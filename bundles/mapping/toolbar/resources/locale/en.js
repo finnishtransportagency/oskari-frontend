@@ -7,11 +7,8 @@ Oskari.registerLocalization(
             "link": {
                 "tooltip": "Make a link to the map view.",
                 "ok": "OK",
-                "copy": "Copy the link to the clipboard",
                 "title": "Link to Map View",
-                "cannot": "This map view cannot be linked to. Create a new map view and try again.",
-                "addMarker": "Show a marker in the center of the map",
-                "skipInfo": "Do not show quick guide"
+                "cannot": "This map view cannot be linked to. Create a new map view and try again."
             },
             "history": {
                 "reset": "Move to the default map view.",
@@ -29,7 +26,7 @@ Oskari.registerLocalization(
             "title": "Measurement Results",
             "close": "Cancel",
             "guidance": {
-                "measureline": "Draw a measurable line by clicking its breaking points.",
+                "measureline": "Draw a measurable line by cliking its breaking points.",
                 "measurearea": "Draw a measurable area by clicking its corner points."
             }
         },

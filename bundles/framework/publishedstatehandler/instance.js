@@ -21,7 +21,6 @@ Oskari.clazz.define(
         this._historyPrevious = [];
         this._historyNext = [];
         this._historyEnabled = true;
-        this._log = Oskari.log(this.getName());
 
         // TODO: default view from conf?
         this._defaultViewId = 1;
@@ -83,11 +82,11 @@ Oskari.clazz.define(
                 }
             }
 
-            sandbox.requestHandler(
+            sandbox.addRequestHandler(
                 'StateHandler.SetStateRequest',
                 this.requestHandlers.setStateHandler
             );
-            sandbox.requestHandler(
+            sandbox.addRequestHandler(
                 'StateHandler.SaveStateRequest',
                 this.requestHandlers.saveStateHandler
             );
@@ -117,7 +116,7 @@ Oskari.clazz.define(
                 this.requestHandlers.saveStateHandler
             );
             // sends a request that removes button described in config
-            var rb = Oskari.requestBuilder('MapControls.ToolButtonRequest');
+            var rb = sandbox.getRequestBuilder('MapControls.ToolButtonRequest');
             if (rb) {
                 sandbox.request(this, rb(this.toolbar.config, 'remove'));
             }
@@ -186,7 +185,10 @@ Oskari.clazz.define(
             }
 
             return handler.apply(this, [event]);
+
         },
+
+
 
         /**
          * @property {Object} eventHandlers
@@ -212,6 +214,7 @@ Oskari.clazz.define(
             'MapLayerVisibilityChangedEvent': function (event) {
                 var me = this;
                 me._pushState();
+
             }
         },
 
@@ -225,7 +228,7 @@ Oskari.clazz.define(
         registerPlugin: function (plugin) {
             plugin.setHandler(this);
             var pluginName = plugin.getName();
-            this._log.debug('Registering ' + pluginName);
+            this.sandbox.printDebug('[' + this.getName() + ']' + ' Registering ' + pluginName);
             this._pluginInstances[pluginName] = plugin;
         },
         /**
@@ -238,7 +241,7 @@ Oskari.clazz.define(
          */
         unregisterPlugin: function (plugin) {
             var pluginName = plugin.getName();
-            this._log.debug('Unregistering ' + pluginName);
+            this.sandbox.printDebug('[' + this.getName() + ']' + ' Unregistering ' + pluginName);
             this._pluginInstances[pluginName] = undefined;
             plugin.setHandler(null);
         },
@@ -252,7 +255,7 @@ Oskari.clazz.define(
         startPlugin: function (plugin) {
             var pluginName = plugin.getName();
 
-            this._log.debug('Starting ' + pluginName);
+            this.sandbox.printDebug('[' + this.getName() + ']' + ' Starting ' + pluginName);
             plugin.startPlugin(this.sandbox);
         },
         /**
@@ -265,11 +268,11 @@ Oskari.clazz.define(
         stopPlugin: function (plugin) {
             var pluginName = plugin.getName();
 
-            this._log.debug('Starting ' + pluginName);
+            this.sandbox.printDebug('[' + this.getName() + ']' + ' Starting ' + pluginName);
             plugin.stopPlugin(this.sandbox);
         },
 
-        // FIXME
+//FIXME
         /**
          * @method setCurrentViewId
          * @param {Number} Current view ID
@@ -284,7 +287,7 @@ Oskari.clazz.define(
         getCurrentViewId: function () {
             return this._currentViewId;
         },
-        //
+//
         /* state pop / push ie undo redo begins here */
 
         _stateComparators: [{
@@ -299,7 +302,7 @@ Oskari.clazz.define(
             cmp: function (prevState, nextState) {
                 if (prevState.east !== nextState.east ||
                         prevState.north !== nextState.north
-                ) {
+                        ) {
                     return true;
                 }
                 if (prevState.zoom !== nextState.zoom) {
@@ -326,8 +329,8 @@ Oskari.clazz.define(
                         allInvisible = false;
                     }
                 }
-                if (allInvisible) {
-                    // Don't save state when all are invisible
+                if(allInvisible){
+                    //Don't save state when all are invisible
                     return false;
                 }
 
@@ -335,7 +338,11 @@ Oskari.clazz.define(
                     prevLayer = prevLayers[ln];
                     nextLayer = nextLayers[ln];
 
-                    me._log.debug('comparing layer state ' + prevLayer.id + ' vs ' + nextLayer.id);
+                    me.sandbox.printDebug(
+                        '[StateHandler] comparing layer state ' +
+                        prevLayer.id + ' vs ' + nextLayer.id
+                    );
+
 
                     if (prevLayer.id !== nextLayer.id) {
                         return true;
@@ -367,9 +374,13 @@ Oskari.clazz.define(
                 cmp;
             for (sc = 0; sc < me._stateComparators.length; sc += 1) {
                 cmp = me._stateComparators[sc];
-                me._log.debug('comparing state ' + cmp.rule);
+                me.sandbox.printDebug(
+                    '[StateHandler] comparing state ' + cmp.rule
+                );
                 if (cmp.cmp.apply(this, [prevState, nextState])) {
-                    me._log.debug('comparing state MATCH ' + cmp.rule);
+                    me.sandbox.printDebug(
+                        '[StateHandler] comparing state MATCH ' + cmp.rule
+                    );
                     cmpResult.result = true;
                     cmpResult.rule = cmp.rule;
                     cmpResult.rulesMatched[cmp.rule] = cmp.rule;
@@ -381,6 +392,21 @@ Oskari.clazz.define(
             return cmpResult;
         },
 
+        /**
+         * @method logState
+         * @private
+         * Sends a GET request to the url in the conf with map parameters
+         */
+        _logState: function () {
+            var me = this,
+                logUrlWithLinkParams = me.conf.logUrl + '?' + me.sandbox.generateMapLinkParameters();
+
+            jQuery.ajax({
+                type: 'GET',
+                url: logUrlWithLinkParams
+            });
+        },
+
         _pushState: function () {
             var me = this;
             if (me._historyEnabled) {
@@ -389,10 +415,14 @@ Oskari.clazz.define(
                     prevState = history.length === 0 ? null : history[history.length - 1],
                     cmpResult = me._compareState(prevState, state, true);
                 if (cmpResult.result) {
-                    me._log.debug('PUSHING state');
+                    me.sandbox.printDebug('[StateHandler] PUSHING state');
                     state.rule = cmpResult.rule;
                     me._historyPrevious.push(state);
                     me._historyNext = [];
+
+                    if (me.conf && me.conf.logUrl) {
+                        me._logState();
+                    }
                 }
             }
         },
@@ -417,7 +447,7 @@ Oskari.clazz.define(
             switch (this._historyPrevious.length) {
             case 0:
                 /* hard reset */
-                /* this.resetState(); */
+                /*this.resetState();*/
                 break;
             case 1:
                 break;
@@ -445,6 +475,7 @@ Oskari.clazz.define(
             var sandbox = this.getSandbox(),
                 map = sandbox.getMap(),
                 selectedLayers = sandbox.findAllSelectedMapLayers(),
+                zoom = map.getZoom(),
                 lat = map.getX(),
                 lon = map.getY(),
                 state = {
@@ -485,13 +516,13 @@ Oskari.clazz.define(
 
             // setting state
             if (state.selectedLayers && cmpResult.rulesMatched.layers) {
-                this._log.debug('restoring LAYER state');
+                sandbox.printDebug('[StateHandler] restoring LAYER state');
                 this._teardownState(mapmodule);
 
-                var rbAdd = Oskari.requestBuilder('AddMapLayerRequest'),
-                    rbOpacity = Oskari.requestBuilder('ChangeMapLayerOpacityRequest'),
-                    visibilityRequestBuilder = Oskari.requestBuilder('MapModulePlugin.MapLayerVisibilityRequest'),
-                    styleReqBuilder = Oskari.requestBuilder('ChangeMapLayerStyleRequest'),
+                var rbAdd = sandbox.getRequestBuilder('AddMapLayerRequest'),
+                    rbOpacity = sandbox.getRequestBuilder('ChangeMapLayerOpacityRequest'),
+                    visibilityRequestBuilder = sandbox.getRequestBuilder('MapModulePlugin.MapLayerVisibilityRequest'),
+                    styleReqBuilder = sandbox.getRequestBuilder('ChangeMapLayerStyleRequest'),
                     len = state.selectedLayers.length,
                     i,
                     layer;
@@ -513,7 +544,7 @@ Oskari.clazz.define(
             }
 
             if (state.east) {
-                this._log.debug('restoring LOCATION state');
+                sandbox.printDebug('[StateHandler] restoring LOCATION state');
                 this.getSandbox().getMap().moveTo(
                     state.east,
                     state.north,
@@ -534,7 +565,7 @@ Oskari.clazz.define(
         _teardownState: function (module) {
             var sandbox = this.getSandbox(),
                 selectedLayers = sandbox.findAllSelectedMapLayers(),
-                rbRemove = Oskari.requestBuilder('RemoveMapLayerRequest'), // remove all current layers
+                rbRemove = sandbox.getRequestBuilder('RemoveMapLayerRequest'), // remove all current layers
                 i;
             for (i = 0; i < selectedLayers.length; i += 1) {
                 sandbox.request(module.getName(), rbRemove(selectedLayers[i].getId()));

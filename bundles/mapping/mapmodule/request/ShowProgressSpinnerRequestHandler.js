@@ -1,10 +1,9 @@
 Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.request.ShowProgressSpinnerRequestHandler', function (sandbox) {
     this.sandbox = sandbox;
     this.mapModule = this.sandbox.findRegisteredModuleInstance('MainMapModule');
-    this._log = Oskari.log('ShowProgressSpinnerRequestHandler');
 }, {
     handleRequest: function (core, request) {
-        this._log.debug('Show progress spinner');
+        this.sandbox.printDebug('[Oskari.mapframework.bundle.mapmodule.request.ShowProgressSpinnerRequestHandler] Show progress spinner');
         if (!this.mapModule._progressSpinner) {
             this.mapModule._progressSpinner = Oskari.clazz.create(
                 'Oskari.userinterface.component.ProgressSpinner'

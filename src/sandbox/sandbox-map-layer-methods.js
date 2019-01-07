@@ -81,5 +81,16 @@ Oskari.clazz.category('Oskari.Sandbox', 'map-layer-methods', {
      */
     allowMultipleHighlightLayers: function (allow) {
         this.getMap().allowMultipleActivatedLayers(allow);
+    },
+
+    /**
+     * Calls the core to remove the map layer.
+     *
+     * @method removeMapLayer
+     * @param  {String/Number} layerId
+     * @return {undefined}
+     */
+    removeMapLayer: function (layerId) {
+        this.getMap().removeLayer(layerId);
     }
 });

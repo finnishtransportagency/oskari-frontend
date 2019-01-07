@@ -7,7 +7,6 @@ Oskari.registerLocalization(
         "desc": "Moje údaje",
         "notLoggedIn": "Ako prihlásený používateľ tu môžete vidieť informácie o vašom účte, vaše uložené miesta, mapové zobrazenia, uložené mapy, indikátory, anylýzy a datasety.",
         "notLoggedInText": "Prihlásiť sa",
-        "register": "Register",
         "tabs": {
             "myviews": {
                 "title": "Moje mapové zobrazenia",

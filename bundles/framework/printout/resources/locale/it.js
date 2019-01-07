@@ -55,7 +55,8 @@ Oskari.registerLocalization(
                 "tooltip": "Puoi ingrandire l'anteprima cliccando su di essa.",
                 "pending": "L'anteprima sarà aggiornata a breve.",
                 "notes": {
-                    "extent": "Puoi controllare l'area di stampadella mappa nell'anteprima"
+                    "extent": "Puoi controllare l'area di stampadella mappa nell'anteprima",
+                    "restriction": "Non tutti i layers sono mostrati nell'anteprima"
                 }
             },
             "buttons": {

@@ -19,8 +19,7 @@
         getUser: 'Use Oskari.user() instead.',
         getLocalizedProperty: 'Use Oskari.getLocalized() instead.',
         setAjaxUrl: 'Use Oskari.urls.set("api", [url]) instead.',
-        getAjaxUrl: 'Use Oskari.urls.getRoute() instead.',
-        removeMapLayer: 'Use Sandbox.getMap().removeLayer() instead.'
+        getAjaxUrl: 'Use Oskari.urls.getRoute() instead.'
     };
     // Warn 2 times before falling silent
     var warn = function (name) {
@@ -148,7 +147,7 @@
          */
         setAjaxUrl: function (pUrl) {
             warn('setAjaxUrl');
-            Oskari.urls.set('api', pUrl);
+            Oskari.urls.set("api", pUrl);
         },
 
         /**
@@ -160,18 +159,6 @@
         getAjaxUrl: function (route) {
             warn('getAjaxUrl');
             return Oskari.urls.getRoute(route);
-        },
-
-        /**
-         * Calls the core to remove the map layer.
-         *
-         * @method removeMapLayer
-         * @param  {String/Number} layerId
-         * @return {undefined}
-         */
-        removeMapLayer: function (layerId) {
-            warn('removeMapLayer');
-            this.getMap().removeLayer(layerId);
         }
 
     });

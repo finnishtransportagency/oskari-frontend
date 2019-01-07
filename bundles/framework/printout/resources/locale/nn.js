@@ -55,7 +55,8 @@ Oskari.registerLocalization(
                 "tooltip": "Du kan forstørre førehandsvisninga ved å klikke på biletet",
                 "pending": "Førehandsvisninga vil bli oppdatert",
                 "notes": {
-                    "extent": "Du kan sjekke kartutstrekninga for utskrifta i førehandsvisninga"
+                    "extent": "Du kan sjekke kartutstrekninga for utskrifta i førehandsvisninga",
+                    "restriction": "Ikkje alle kartlag blir vist i førehandsvisninga"
                 }
             },
             "buttons": {

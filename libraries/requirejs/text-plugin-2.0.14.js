@@ -247,7 +247,7 @@ define('text', ['module'], function (module) {
             !process.versions['node-webkit'] &&
             !process.versions['atom-shell'])) {
         //Using special require.nodeRequire, something added by r.js.
-        fs = global.require.nodeRequire('fs');
+        fs = require.nodeRequire('fs');
 
         text.get = function (url, callback, errback) {
             try {

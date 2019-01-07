@@ -6,6 +6,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.model.LayerGroup'
      */
 
     function (title) {
+        
         this.name = title;
         this.layers = [];
         this.searchIndex = {};
@@ -15,6 +16,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.model.LayerGroup'
          * @param {String} value
          */
         setTitle: function (value) {
+            
             this.name = value;
         },
         /**
@@ -22,6 +24,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.model.LayerGroup'
          * @return {String}
          */
         getTitle: function () {
+            
             return this.name;
         },
         /**
@@ -29,6 +32,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.model.LayerGroup'
          * @param {Layer} layer
          */
         addLayer: function (layer) {
+            
             this.layers.push(layer);
             this.searchIndex[layer.getId()] = this._getSearchIndex(layer);
         },
@@ -37,9 +41,11 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.model.LayerGroup'
          * @return {Layer[]}
          */
         getLayers: function () {
+            
             return this.layers;
         },
         _getSearchIndex: function (layer) {
+            
             var val = layer.getName() + ' ' +
                 layer.getInspireName() + ' ' +
                 layer.getOrganizationName();
@@ -47,6 +53,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.layerselector2.model.LayerGroup'
             return val.toLowerCase();
         },
         matchesKeyword: function (layerId, keyword) {
+            
             var searchableIndex = this.searchIndex[layerId];
             return searchableIndex.indexOf(keyword.toLowerCase()) !== -1;
         }

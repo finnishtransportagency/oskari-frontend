@@ -55,7 +55,8 @@ Oskari.registerLocalization(
                 "tooltip": "Klikšķiniet uz mazā priekšskatījuma, lai to atvērtu lielāku",
                 "pending": "Priekšskatījums drīzumā tiks atjaunināts",
                 "notes": {
-                    "extent": "Priekšskatījums var tikt izmantots, lai noskaidrotu kartes izmērus izdrukai"
+                    "extent": "Priekšskatījums var tikt izmantots, lai noskaidrotu kartes izmērus izdrukai",
+                    "restriction": "Priekšskatījumā nav attēloti visi kartes slāņi"
                 }
             },
             "buttons": {

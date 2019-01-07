@@ -55,7 +55,8 @@ Oskari.registerLocalization(
                 "tooltip": "Kliko në parapamjen e vogël për shtypje për të hapur parapamjen e madhe për shtypje",
                 "pending": "Parapamja për shtypje do të azhurnohet së shpejti",
                 "notes": {
-                    "extent": "Parapamja për shtypje mund të përdoret për të vendosur për shtrirjen e hartës për shtypje"
+                    "extent": "Parapamja për shtypje mund të përdoret për të vendosur për shtrirjen e hartës për shtypje",
+                    "restriction": "Jo të gjitha shtresat e hartës janë paraqitur në parapamjen për shtypje"
                 }
             },
             "buttons": {

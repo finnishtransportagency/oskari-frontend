@@ -174,23 +174,23 @@ Oskari.clazz.define(
                 sandbox,
                 this
             );
-            sandbox.requestHandler(
+            sandbox.addRequestHandler(
                 'MyPlaces.EditPlaceRequest',
                 editRequestHandler
             );
-            sandbox.requestHandler(
+            sandbox.addRequestHandler(
                 'MyPlaces.DeletePlaceRequest',
                 editRequestHandler
             );
-            sandbox.requestHandler(
+            sandbox.addRequestHandler(
                 'MyPlaces.EditCategoryRequest',
                 editRequestHandler
             );
-            sandbox.requestHandler(
+            sandbox.addRequestHandler(
                 'MyPlaces.DeleteCategoryRequest',
                 editRequestHandler
             );
-            sandbox.requestHandler(
+            sandbox.addRequestHandler(
                 'MyPlaces.PublishCategoryRequest',
                 editRequestHandler
             );
@@ -200,7 +200,7 @@ Oskari.clazz.define(
                 sandbox,
                 this
             );
-            sandbox.requestHandler(
+            sandbox.addRequestHandler(
                 'MyPlaces.OpenAddLayerDialogRequest',
                 openAddLayerDialogHandler
             );

@@ -55,7 +55,8 @@ Oskari.registerLocalization(
                 "tooltip": "Haga clic en la previsualización para agrandarla",
                 "pending": "La previsualización se actualizará en breve",
                 "notes": {
-                    "extent": "La previsualización puede usarse para calcular la extensión del mapa para impresión"
+                    "extent": "La previsualización puede usarse para calcular la extensión del mapa para impresión",
+                    "restriction": "No se muestran todas las capas en la previsualización"
                 }
             },
             "buttons": {

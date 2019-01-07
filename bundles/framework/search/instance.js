@@ -55,6 +55,7 @@ Oskari.clazz.define(
             return this.sandbox;
         },
 
+
         /**
          * @method getLocalization
          * Returns JSON presentation of bundles localization data for
@@ -128,9 +129,9 @@ Oskari.clazz.define(
                 }
             }
 
-            // Let's extend UI
+            //Let's extend UI
             var reqName = 'userinterface.AddExtensionRequest',
-                reqBuilder = Oskari.requestBuilder(reqName),
+                reqBuilder = sandbox.getRequestBuilder(reqName),
                 request = reqBuilder(this);
             sandbox.request(this, request);
 
@@ -148,13 +149,13 @@ Oskari.clazz.define(
                     'Oskari.mapframework.bundle.search.request.SearchResultActionRequestHandler',
                     sandbox, this.plugins['Oskari.userinterface.Flyout'])
             };
-            sandbox.requestHandler(
+            sandbox.addRequestHandler(
                 'Search.AddTabRequest',
                 this.requestHandlers.addTabRequestHandler);
-            sandbox.requestHandler(
+            sandbox.addRequestHandler(
                 'Search.AddSearchResultActionRequest',
                 this.requestHandlers.addSearchResultActionRequestHandler);
-            sandbox.requestHandler(
+            sandbox.addRequestHandler(
                 'Search.RemoveSearchResultActionRequest',
                 this.requestHandlers.addSearchResultActionRequestHandler);
 
@@ -192,6 +193,7 @@ Oskari.clazz.define(
             }
 
             return handler.apply(this, [event]);
+
         },
 
         /**
@@ -214,10 +216,10 @@ Oskari.clazz.define(
                     plugin.focus();
                 }
             },
-            'SearchResultEvent': function (event) {
+            'SearchResultEvent' : function(event)  {
                 var plugin = this.plugins['Oskari.userinterface.Flyout'];
                 var params = event.getRequestParameters();
-                if (typeof params === 'object') {
+                if(typeof params === 'object') {
                     params = params.searchKey;
                 }
                 plugin.handleSearchResult(event.getSuccess(), event.getResult(), params);
@@ -238,7 +240,7 @@ Oskari.clazz.define(
             }
 
             var reqName = 'userinterface.RemoveExtensionRequest',
-                reqBuilder = Oskari.requestBuilder(reqName),
+                reqBuilder = sandbox.getRequestBuilder(reqName),
                 request = reqBuilder(this);
 
             sandbox.request(this, request);
@@ -308,6 +310,7 @@ Oskari.clazz.define(
          * (re)creates the UI for "selected layers" functionality
          */
         createUi: function () {
+            var me = this;
             this.plugins['Oskari.userinterface.Flyout'].createUi();
             this.plugins['Oskari.userinterface.Tile'].refresh();
         },
@@ -336,10 +339,10 @@ Oskari.clazz.define(
          */
         __guidedTourDelegateTemplate: {
             priority: 10,
-            show: function () {
+            show: function(){
                 this.sandbox.postRequestByName('userinterface.UpdateExtensionRequest', [null, 'attach', 'Search']);
             },
-            hide: function () {
+            hide: function(){
                 this.sandbox.postRequestByName('userinterface.UpdateExtensionRequest', [null, 'close', 'Search']);
             },
             getTitle: function () {
@@ -350,13 +353,13 @@ Oskari.clazz.define(
                 content.append(this.localization.guidedTour.message);
                 return content;
             },
-            getLinks: function () {
+            getLinks: function() {
                 var me = this;
                 var loc = this.localization.guidedTour;
                 var linkTemplate = jQuery('<a href="#"></a>');
                 var openLink = linkTemplate.clone();
                 openLink.append(loc.openLink);
-                openLink.on('click',
+                openLink.bind('click',
                     function () {
                         me.sandbox.postRequestByName('userinterface.UpdateExtensionRequest', [null, 'attach', 'Search']);
                         openLink.hide();
@@ -364,7 +367,7 @@ Oskari.clazz.define(
                     });
                 var closeLink = linkTemplate.clone();
                 closeLink.append(loc.closeLink);
-                closeLink.on('click',
+                closeLink.bind('click',
                     function () {
                         me.sandbox.postRequestByName('userinterface.UpdateExtensionRequest', [null, 'close', 'Search']);
                         openLink.show();
@@ -380,16 +383,16 @@ Oskari.clazz.define(
          * @method _registerForGuidedTour
          * Registers bundle for guided tour help functionality. Waits for guided tour load if not found
          */
-        _registerForGuidedTour: function () {
+        _registerForGuidedTour: function() {
             var me = this;
-            function sendRegister () {
+            function sendRegister() {
                 var requestBuilder = Oskari.requestBuilder('Guidedtour.AddToGuidedTourRequest');
-                if (requestBuilder && me.sandbox.hasHandler('Guidedtour.AddToGuidedTourRequest')) {
+                if(requestBuilder){
                     var delegate = {
                         bundleName: me.getName()
                     };
-                    for (var prop in me.__guidedTourDelegateTemplate) {
-                        if (typeof me.__guidedTourDelegateTemplate[prop] === 'function') {
+                    for(var prop in me.__guidedTourDelegateTemplate){
+                        if(typeof me.__guidedTourDelegateTemplate[prop] === 'function') {
                             delegate[prop] = me.__guidedTourDelegateTemplate[prop].bind(me); // bind methods to bundle instance
                         } else {
                             delegate[prop] = me.__guidedTourDelegateTemplate[prop]; // assign values
@@ -399,14 +402,14 @@ Oskari.clazz.define(
                 }
             }
 
-            function handler (msg) {
-                if (msg.id === 'guidedtour') {
+            function handler(msg){
+                if(msg.id === 'guidedtour') {
                     sendRegister();
                 }
             }
 
             var tourInstance = me.sandbox.findRegisteredModuleInstance('GuidedTour');
-            if (tourInstance) {
+            if(tourInstance) {
                 sendRegister();
             } else {
                 Oskari.on('bundle.start', handler);

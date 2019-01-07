@@ -1,10 +1,3 @@
-import olInteractionDragZoom from 'ol/interaction/DragZoom';
-import olInteractionDragPan from 'ol/interaction/DragPan';
-import olInteractionKeyboardPan from 'ol/interaction/KeyboardPan';
-import olInteractionKeyboardZoom from 'ol/interaction/KeyboardZoom';
-import olInteractionMouseWheelZoom from 'ol/interaction/MouseWheelZoom';
-import olInteractionDoubleClickZoom from 'ol/interaction/DoubleClickZoom';
-
 /**
  * @class Oskari.mapframework.bundle.mapmodule.request.MapMovementInteractionsRequestHandler
  * Handles map movement control requests
@@ -20,7 +13,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.request.MapMovementCon
     function (mapModule) {
         this.mapModule = mapModule;
     }, {
-        getMapModule: function () {
+        getMapModule : function() {
             return this.mapModule;
         },
         /**
@@ -35,83 +28,46 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.request.MapMovementCon
          *      request to handle
          */
         handleRequest: function (core, request) {
-            var interactions = [];
             if (request.getName() === 'EnableMapKeyboardMovementRequest') {
-                if (request.getOptions()) {
-                    if (request.getOptions('pan')) {
-                        interactions.push(this.getMapModule().getInteractionInstance(olInteractionKeyboardPan));
-                    }
-                    if (request.getOptions('zoom')) {
-                        interactions.push(this.getMapModule().getInteractionInstance(olInteractionKeyboardZoom));
-                    }
-                } else {
-                    interactions.push(this.getMapModule().getInteractionInstance(olInteractionKeyboardPan));
-                    interactions.push(this.getMapModule().getInteractionInstance(olInteractionKeyboardZoom));
-                }
-                interactions.forEach(function (interaction) {
-                    if (interaction) {
+                var interactions = [];
+                interactions.push(this.getMapModule().getInteractionInstance(ol.interaction.KeyboardPan));
+                interactions.push(this.getMapModule().getInteractionInstance(ol.interaction.KeyboardZoom));
+                if (interactions) {
+                    _.forEach(interactions, function (interaction) {
                         interaction.setActive(true);
-                    }
-                });
+                    });
+                }
             } else if (request.getName() === 'DisableMapKeyboardMovementRequest') {
-                if (request.getOptions()) {
-                    if (request.getOptions('pan')) {
-                        interactions.push(this.getMapModule().getInteractionInstance(olInteractionKeyboardPan));
-                    }
-                    if (request.getOptions('zoom')) {
-                        interactions.push(this.getMapModule().getInteractionInstance(olInteractionKeyboardZoom));
-                    }
-                } else {
-                    interactions.push(this.getMapModule().getInteractionInstance(olInteractionKeyboardPan));
-                    interactions.push(this.getMapModule().getInteractionInstance(olInteractionKeyboardZoom));
-                }
-                interactions.forEach(function (interaction) {
-                    if (interaction) {
+                var interactions = [];
+                interactions.push(this.getMapModule().getInteractionInstance(ol.interaction.KeyboardPan));
+                interactions.push(this.getMapModule().getInteractionInstance(ol.interaction.KeyboardZoom));
+                if (interactions) {
+                    _.forEach(interactions, function (interaction) {
                         interaction.setActive(false);
-                    }
-                });
+                    });
+                }
             } else if (request.getName() === 'EnableMapMouseMovementRequest') {
-                if (request.getOptions()) {
-                    if (request.getOptions('pan')) {
-                        interactions.push(this.getMapModule().getInteractionInstance(olInteractionDragPan));
-                    }
-                    if (request.getOptions('zoom')) {
-                        interactions.push(this.getMapModule().getInteractionInstance(olInteractionMouseWheelZoom));
-                        interactions.push(this.getMapModule().getInteractionInstance(olInteractionDoubleClickZoom));
-                        interactions.push(this.getMapModule().getInteractionInstance(olInteractionDragZoom));
-                    }
-                } else {
-                    interactions.push(this.getMapModule().getInteractionInstance(olInteractionDragPan));
-                    interactions.push(this.getMapModule().getInteractionInstance(olInteractionMouseWheelZoom));
-                    interactions.push(this.getMapModule().getInteractionInstance(olInteractionDoubleClickZoom));
-                    interactions.push(this.getMapModule().getInteractionInstance(olInteractionDragZoom));
-                }
-                interactions.forEach(function (interaction) {
-                    if (interaction) {
+                var interactions = [];
+                interactions.push(this.getMapModule().getInteractionInstance(ol.interaction.DragPan));
+                interactions.push(this.getMapModule().getInteractionInstance(ol.interaction.MouseWheelZoom));
+                interactions.push(this.getMapModule().getInteractionInstance(ol.interaction.DoubleClickZoom));
+                interactions.push(this.getMapModule().getInteractionInstance(ol.interaction.DragZoom));
+                if (interactions) {
+                    _.forEach(interactions, function (interaction) {
                         interaction.setActive(true);
-                    }
-                });
-            } else if (request.getName() === 'DisableMapMouseMovementRequest') {
-                if (request.getOptions()) {
-                    if (request.getOptions('pan')) {
-                        interactions.push(this.getMapModule().getInteractionInstance(olInteractionDragPan));
-                    }
-                    if (request.getOptions('zoom')) {
-                        interactions.push(this.getMapModule().getInteractionInstance(olInteractionMouseWheelZoom));
-                        interactions.push(this.getMapModule().getInteractionInstance(olInteractionDoubleClickZoom));
-                        interactions.push(this.getMapModule().getInteractionInstance(olInteractionDragZoom));
-                    }
-                } else {
-                    interactions.push(this.getMapModule().getInteractionInstance(olInteractionDragPan));
-                    interactions.push(this.getMapModule().getInteractionInstance(olInteractionMouseWheelZoom));
-                    interactions.push(this.getMapModule().getInteractionInstance(olInteractionDoubleClickZoom));
-                    interactions.push(this.getMapModule().getInteractionInstance(olInteractionDragZoom));
+                    });
                 }
-                interactions.forEach(function (interaction) {
-                    if (interaction) {
+            } else if (request.getName() === 'DisableMapMouseMovementRequest') {
+                var interactions = [];
+                interactions.push(this.getMapModule().getInteractionInstance(ol.interaction.DragPan));
+                interactions.push(this.getMapModule().getInteractionInstance(ol.interaction.MouseWheelZoom));
+                interactions.push(this.getMapModule().getInteractionInstance(ol.interaction.DoubleClickZoom));
+                interactions.push(this.getMapModule().getInteractionInstance(ol.interaction.DragZoom));
+                if (interactions) {
+                    _.forEach(interactions, function (interaction) {
                         interaction.setActive(false);
-                    }
-                });
+                    });
+                }
             }
         }
     }, {

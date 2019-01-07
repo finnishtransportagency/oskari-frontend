@@ -34,7 +34,7 @@ function() {
         },
         {
             "type" : "text/css",
-            "src" : "../../../../bundles/admin/appsetup/resources/scss/style.scss"
+            "src" : "../../../../bundles/admin/appsetup/resources/css/style.css"
         }],
 
         "locales" : [{

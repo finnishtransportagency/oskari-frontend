@@ -1,4 +1,4 @@
-# Pan Buttons Plugin
+# Pan Buttons
 
 ## Description
 

@@ -55,7 +55,8 @@ Oskari.registerLocalization(
                 "tooltip": "Smelltu á myndina í forskoðunarham til að opna stærri mynd í öðrum glugga.",
                 "pending": "Forskoðunarmyndin verður uppfærð fljótlega.",
                 "notes": {
-                    "extent": "Skoðaðu umfang kortsins í forskoðunarglugganum."
+                    "extent": "Skoðaðu umfang kortsins í forskoðunarglugganum.",
+                    "restriction": "Aðeins er sýnt bakgrunnskort í forskoðunarglugganum."
                 }
             },
             "buttons": {

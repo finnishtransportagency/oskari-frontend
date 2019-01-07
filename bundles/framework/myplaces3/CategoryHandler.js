@@ -217,13 +217,12 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplaces3.CategoryHandler',
             return json;
         },
         _processStartupLinkLayers: function (sandbox) {
-            var me = this;
             var mapLayers = Oskari.util.getRequestParam('mapLayers');
             if (!mapLayers) {
                 // no linked layers
                 return;
             }
-            var moduleName = me.getName();
+            var moduleName = this.getName();
             var layerStrings = mapLayers.split(',');
             var keepLayersOrder = true;
             layerStrings.forEach(function (layerStr) {
@@ -231,7 +230,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplaces3.CategoryHandler',
                 var layerId = splitted[0];
                 var opacity = splitted[1];
 
-                if (layerId === null || layerId.indexOf(me.instance.idPrefix) === -1) {
+                if (layerId === null || layerId.indexOf(this.instance.idPrefix) === -1) {
                     return;
                 }
                 var addLayerReq = Oskari.requestBuilder('AddMapLayerRequest');

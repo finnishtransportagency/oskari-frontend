@@ -267,7 +267,9 @@ Oskari.clazz.define(
             var me = this,
                 dteMs = (new Date()).getTime(),
                 layerIds = me._buildLayerIdList(layers || this.getSandbox().findAllSelectedMapLayers()),
+                ajaxUrl = this.getSandbox().getAjaxUrl(),
                 mapVO = me.getSandbox().getMap(),
+                olMap = me.getMapModule().getMap(),
                 px = me.getMapModule().getPixelFromCoordinate(lonlat);
 
             if (!layerIds) {
@@ -331,7 +333,7 @@ Oskari.clazz.define(
                 },
                 type: 'POST',
                 dataType: 'json',
-                url: Oskari.urls.getRoute('GetFeatureInfoWMS')
+                url: ajaxUrl + 'action_route=GetFeatureInfoWMS'
             });
         },
 
@@ -348,7 +350,8 @@ Oskari.clazz.define(
          * @param  {Object} data
          */
         _handleInfoResult: function (data) {
-            var content = [],
+            var me = this,
+                content = [],
                 contentData = {},
                 fragments = [],
                 colourScheme,
@@ -436,7 +439,7 @@ Oskari.clazz.define(
                 req;
 
             if (this.clickLocation) {
-                reqB = Oskari.requestBuilder(
+                reqB = this.getSandbox().getRequestBuilder(
                     'InfoBox.RefreshInfoBoxRequest'
                 );
 

@@ -32,21 +32,24 @@ Oskari.clazz.define(
                 '  <span class="keyword"></span>' +
                 '</a>',
             keywordType: '<div class="type"></div>',
-            layerFilter: '<div class="layer-filter layerselector2-layer-filter">' +
+            layerFilter: '<div class="layer-filter layerselector2-layer-filter">'+
                 '</div><div style="clear:both;"></div>'
         };
         this._createUI(id);
     }, {
 
         getTitle: function () {
+            
             return this.title;
         },
 
         getTabPanel: function () {
+            
             return this.tabPanel;
         },
 
         getState: function () {
+            
             var state = {
                 tab: this.getTitle(),
                 filter: this.filterField.getValue(),
@@ -56,6 +59,7 @@ Oskari.clazz.define(
         },
 
         setState: function (state) {
+            
             if (!state) {
                 return;
             }
@@ -84,6 +88,7 @@ Oskari.clazz.define(
          * Creates info icon for given oskarifield
          */
         _createInfoIcon: function (oskarifield) {
+            
             var me = this,
                 infoIcon = jQuery('<div class="icon-info"></div>'),
                 indicatorCont = oskarifield.find('.field-description');
@@ -92,7 +97,7 @@ Oskari.clazz.define(
             // append this indicator
             indicatorCont.append(infoIcon);
             // show metadata
-            infoIcon.on('click', function (e) {
+            infoIcon.click(function (e) {
                 var desc = jQuery(me.templates.description),
                     dialog = Oskari.clazz.create(
                         'Oskari.userinterface.component.Popup'
@@ -107,6 +112,7 @@ Oskari.clazz.define(
                     dialog.close(true);
                 });
                 dialog.show(me._locale.filter.text, desc, [okBtn]);
+
             });
         },
 
@@ -117,6 +123,7 @@ Oskari.clazz.define(
          * @param  {String} oskarifieldId oskari field id
          */
         _createUI: function (oskarifieldId) {
+            
             var me = this,
                 oskarifield,
                 layerFilter;
@@ -131,7 +138,7 @@ Oskari.clazz.define(
             if (me.showSearchSuggestions) {
                 oskarifield.append(
                     jQuery(me.templates.spinner)
-                        .text(me._locale.loading)
+                    .text(me._locale.loading)
                 );
 
                 oskarifield.append(
@@ -141,12 +148,12 @@ Oskari.clazz.define(
 
             oskarifield.append(
                 jQuery(me.templates.shortDescription)
-                    .text(me._locale.filter.shortDescription)
+                .text(me._locale.filter.shortDescription)
             );
 
             me._createInfoIcon(oskarifield);
 
-            if (!(this.instance.conf && this.instance.conf.hideLayerFilters && this.instance.conf.hideLayerFilters === true)) {
+            if(!(this.instance.conf && this.instance.conf.hideLayerFilters && this.instance.conf.hideLayerFilters === true)) {
                 layerFilter = jQuery(me.templates.layerFilter);
                 me.tabPanel.getContainer().append(layerFilter);
             }
@@ -172,6 +179,7 @@ Oskari.clazz.define(
          * @return {Oskari.userinterface.component.FormInput} field
          */
         getFilterField: function () {
+            
             var me = this,
                 field,
                 timer = 0;
@@ -192,6 +200,7 @@ Oskari.clazz.define(
                     me._fireFiltering(field.getValue(), evt, me);
                     timer = null;
                 }, 300);
+
             }, true);
 
             me.filterField = field;
@@ -210,6 +219,7 @@ Oskari.clazz.define(
          * Calls all needed functions to do the layer filtering.
          */
         _fireFiltering: function (keyword, event, me) {
+            
             // Filter by name
             me.filterLayers(keyword);
 
@@ -230,6 +240,7 @@ Oskari.clazz.define(
          * @param  {Array} groups
          */
         showLayerGroups: function (groups) {
+            
             var me = this,
                 i,
                 groupsLength = groups.length,
@@ -258,13 +269,13 @@ Oskari.clazz.define(
                 groupPanel.setTitle(group.getTitle());
                 groupPanel.setId(
                     'oskari_layerselector2_accordionPanel_' +
-                    group.getTitle().replace(/[^a-z0-9\-_:.]/gi, '-')
+                    group.getTitle().replace(/[^a-z0-9\-_:\.]/gi, '-')
                 );
                 group.layerListPanel = groupPanel;
 
                 var badge = Oskari.clazz.create('Oskari.userinterface.component.Badge');
-                badge.insertTo(groupPanel.getHeader());
-                badge.setContent(layersLength, 'inverse');
+                badge.insertTo( groupPanel.getHeader() );
+                badge.setContent( layersLength, "inverse" );
                 group.badge = badge;
 
                 groupContainer = groupPanel.getContainer();
@@ -305,6 +316,7 @@ Oskari.clazz.define(
          * Also checks if all layers in a group is hidden and hides the group as well.
          */
         filterLayers: function (keyword, ids) {
+            
             var me = this,
                 visibleGroupCount = 0,
                 visibleLayerCount,
@@ -348,9 +360,10 @@ Oskari.clazz.define(
                 if (group.layerListPanel.isVisible()) {
                     visibleGroupCount += 1;
                 }
-                if (group.badge) {
-                    group.badge.updateContent(visibleLayerCount + '/' + layers.length);
+                if( group.badge ) {
+                    group.badge.updateContent( visibleLayerCount + '/' + layers.length );
                 }
+
             }
 
             // check if there are no groups visible -> show 'no matches' notification
@@ -378,6 +391,7 @@ Oskari.clazz.define(
          * Clears related keywords popup
          */
         clearRelatedKeywordsPopup: function (keyword, oskarifield) {
+            
             // clear only if sent keyword has changed or it is not null
             if (this.sentKeyword && this.sentKeyword !== keyword) {
                 oskarifield.find('.related-keywords').html('').hide();
@@ -397,10 +411,14 @@ Oskari.clazz.define(
          * Also checks if all layers in a group is hidden and hides the group as well.
          */
         _relatedKeywordsPopup: function (keyword, event, me) {
-            // event.preventDefault();
-            var oskarifield = jQuery(event.currentTarget).parents('.oskarifield');
-            var relatedKeywordsCont;
-            var ajaxUrl;
+            
+            //event.preventDefault();
+            var oskarifield = jQuery(event.currentTarget).parents(
+                    '.oskarifield'
+                ),
+                loc,
+                relatedKeywordsCont,
+                ajaxUrl;
 
             if (!keyword || keyword.length === 0) {
                 this._showAllLayers();
@@ -416,7 +434,7 @@ Oskari.clazz.define(
 
             me.sentKeyword = keyword;
 
-            ajaxUrl = Oskari.urls.getRoute('SearchKeywords') + '&keyword=';
+            ajaxUrl = this.instance.sandbox.getAjaxUrl();
             jQuery.ajax({
                 type: 'GET',
                 dataType: 'json',
@@ -426,7 +444,8 @@ Oskari.clazz.define(
                             'application/j-son;charset=UTF-8');
                     }
                 },
-                url: ajaxUrl + encodeURIComponent(keyword) + '&lang=' + Oskari.getLang(),
+                url: ajaxUrl + 'action_route=SearchKeywords&keyword=' +
+                    encodeURIComponent(keyword) + '&lang=' + Oskari.getLang(),
                 success: function (pResp) {
                     me.relatedKeywords = pResp;
                     me._showRelatedKeywords(keyword, pResp, oskarifield);
@@ -473,6 +492,7 @@ Oskari.clazz.define(
          * Concatenates (in place) those values from arr2 to arr1 that are not present in arr1
          */
         _concatNew: function (arr1, arr2) {
+            
             var me = this,
                 i;
 
@@ -490,6 +510,7 @@ Oskari.clazz.define(
          * Determines if the given value... has a value.
          */
         _isDefined: function (value) {
+            
             return typeof value !== 'undefined' && value !== null && value !== '';
         },
 
@@ -501,6 +522,7 @@ Oskari.clazz.define(
          * Returns true if keyword contains match (ignoring case)
          */
         _containsIgnoreCase: function (keyword, match) {
+            
             var me = this;
             return me._isDefined(keyword) && me._isDefined(match) && keyword.toLowerCase().indexOf(match.toLowerCase()) > -1;
         },
@@ -514,6 +536,7 @@ Oskari.clazz.define(
          * Also returns false if one or both types are not defined
          */
         _matchesIgnoreCase: function (type1, type2) {
+            
             var me = this;
             return me._isDefined(type1) && me._isDefined(type2) && type1.toLowerCase() === type2.toLowerCase();
         },
@@ -527,37 +550,44 @@ Oskari.clazz.define(
          * Also checks if all layers in a group is hidden and hides the group as well.
          */
         _showRelatedKeywords: function (userInput, keywords, oskarifield) {
-            var me = this;
-            var relatedKeywordsCont = me.getFilterField().getField().find('.related-keywords');
-            keywords = keywords || [];
-            var keyword;
-            var keywordTmpl;
-            var ontologySuggestions = [];
-            var ontologyLayers = [];
+            
+            var me = this,
+                relatedKeywordsCont = me.getFilterField().getField().find(
+                    '.related-keywords'
+                ),
+                i,
+                keyword,
+                keywordTmpl,
+                ontologySuggestions = [],
+                ontologyLayers = [];
 
             me.clearRelatedKeywordsPopup(null, oskarifield);
 
             // Go through related keywords, get top 3, show only them
-            keywords.forEach(function (keyword, index) {
-                if (!keyword.layers || !keyword.layers.length) {
-                    return;
-                }
-                // check if we want to show matching layers instead of a suggestion
-                if (me._matchesIgnoreCase(keyword.type, 'syn') ||
-                    (!me._isDefined(keyword.type) && me._containsIgnoreCase(keyword.keyword, userInput))) {
-                    // copy keyword layerids to ontologyLayers, avoid duplicates just because
-                    if (ontologyLayers.size === 0) {
-                        ontologyLayers.concat(keyword.layers);
-                    } else {
-                        me._concatNew(ontologyLayers, keyword.layers);
+            if (keywords && keywords.length > 0) {
+                for (i = 0; i < keywords.length; i += 1) {
+                    keyword = keywords[i];
+                    if (keyword.layers.length > 0) {
+                        // check if we want to show matching layers instead of a suggestion
+                        if (me._matchesIgnoreCase(keyword.type, 'syn') || (!me._isDefined(
+                                keyword.type) && me._containsIgnoreCase(
+                                keyword.keyword, userInput))) {
+                            // copy keyword layerids to ontologyLayers, avoid duplicates just because
+                            if (ontologyLayers.size === 0) {
+                                ontologyLayers.concat(keyword.layers);
+                            } else {
+                                me._concatNew(ontologyLayers, keyword.layers);
+                            }
+                        } else {
+                            ontologySuggestions.push({
+                                idx: i,
+                                count: keyword.layers.length
+                            });
+                        }
                     }
-                } else {
-                    ontologySuggestions.push({
-                        idx: index,
-                        count: keyword.layers.length
-                    });
                 }
-            });
+            }
+
 
             if (ontologySuggestions.length > 0) {
                 relatedKeywordsCont.prepend(
@@ -565,6 +595,9 @@ Oskari.clazz.define(
                         me._locale.filter.didYouMean
                     )
                 );
+            } else {
+                // Why show an error if we can't find suggestions?
+                //relatedKeywordsCont.prepend(jQuery(me.templates.keywordsTitle).text(me._locale.errors.noResultsForKeyword));
             }
 
             // sort ontology suggestions by layer count
@@ -573,7 +606,7 @@ Oskari.clazz.define(
             });
 
             // show three top suggestions
-            for (var i = 0; i < ontologySuggestions.length && i < 3; i += 1) {
+            for (i = 0; i < ontologySuggestions.length && i < 3; i += 1) {
                 keyword = keywords[ontologySuggestions[i].idx];
                 keywordTmpl = jQuery(me.templates.keywordContainer);
                 keywordTmpl
@@ -607,6 +640,7 @@ Oskari.clazz.define(
         },
 
         _showAllLayers: function () {
+            
             var i,
                 group,
                 layers,
@@ -636,6 +670,7 @@ Oskari.clazz.define(
         },
 
         setLayerSelected: function (layerId, isSelected) {
+            
             var layerCont = this.layerContainers[layerId];
             if (layerCont) {
                 layerCont.setSelected(isSelected);
@@ -643,6 +678,7 @@ Oskari.clazz.define(
         },
 
         updateLayerContent: function (layerId, layer) {
+            
             var layerCont = this.layerContainers[layerId];
             if (layerCont) {
                 layerCont.updateLayerContent(layer);

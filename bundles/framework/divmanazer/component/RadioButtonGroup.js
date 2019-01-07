@@ -9,6 +9,7 @@ Oskari.clazz.define('Oskari.userinterface.component.RadioButtonGroup',
      * @method create called automatically on construction
      */
     function () {
+        
         var me = this;
         me._clazz = 'Oskari.userinterface.component.RadioButtonGroup';
         me._element = document.createElement('fieldset');
@@ -22,6 +23,7 @@ Oskari.clazz.define('Oskari.userinterface.component.RadioButtonGroup',
          * Focuses the component.
          */
         focus: function () {
+            
             var radioButton = this._element.querySelector('input');
             if (radioButton) {
                 radioButton.focus();
@@ -29,6 +31,7 @@ Oskari.clazz.define('Oskari.userinterface.component.RadioButtonGroup',
         },
 
         isEnabled: function () {
+            
             return !this.getElement().disabled;
         },
 
@@ -37,6 +40,7 @@ Oskari.clazz.define('Oskari.userinterface.component.RadioButtonGroup',
          * @param {Array} options
          */
         setOptions: function (options) {
+            
             if (!Array.isArray(options)) {
                 throw new TypeError(
                     this.getClazz() +
@@ -82,6 +86,7 @@ Oskari.clazz.define('Oskari.userinterface.component.RadioButtonGroup',
         },
 
         _valueChanged: function () {
+            
             var value = this.getValue();
 
             if (this.getHandler()) {
@@ -93,10 +98,12 @@ Oskari.clazz.define('Oskari.userinterface.component.RadioButtonGroup',
          * @method _setEnabledImpl
          */
         _setEnabledImpl: function (enabled) {
+            
             this._element.disabled = !enabled;
         },
 
         getName: function () {
+            
             return this._name || '';
         },
 
@@ -104,6 +111,7 @@ Oskari.clazz.define('Oskari.userinterface.component.RadioButtonGroup',
          * @method setName
          */
         setName: function (name) {
+            
             var i,
                 inputs = this._element.querySelectorAll('input');
 
@@ -118,6 +126,7 @@ Oskari.clazz.define('Oskari.userinterface.component.RadioButtonGroup',
          * @method _setRequiredImpl
          */
         _setRequiredImpl: function () {
+            
             var i,
                 inputs = this._element.querySelectorAll('input');
             // TODO check if this actually does something...
@@ -127,6 +136,7 @@ Oskari.clazz.define('Oskari.userinterface.component.RadioButtonGroup',
         },
 
         getTitle: function () {
+            
             return this._titleEl.textContent;
         },
 
@@ -134,6 +144,7 @@ Oskari.clazz.define('Oskari.userinterface.component.RadioButtonGroup',
          * @method setTitle
          */
         setTitle: function (title) {
+            
             this._titleEl.textContent = '';
             if (title !== null && title !== undefined) {
                 this._titleEl.style.display = '';
@@ -144,6 +155,7 @@ Oskari.clazz.define('Oskari.userinterface.component.RadioButtonGroup',
         },
 
         getTooltip: function () {
+            
             return this._element.title;
         },
 
@@ -151,10 +163,12 @@ Oskari.clazz.define('Oskari.userinterface.component.RadioButtonGroup',
          * @method setTooltip
          */
         setTooltip: function (tooltip) {
+            
             this._element.title = tooltip;
         },
 
         getValue: function () {
+            
             var input = this._element.querySelector('input:checked');
             return input ? input.value : undefined;
         },
@@ -163,6 +177,7 @@ Oskari.clazz.define('Oskari.userinterface.component.RadioButtonGroup',
          * @method setValue
          */
         setValue: function (value) {
+            
             var i,
                 input,
                 inputs = this._element.querySelectorAll('input'),
@@ -186,9 +201,10 @@ Oskari.clazz.define('Oskari.userinterface.component.RadioButtonGroup',
          * @method _setVisibleImpl
          */
         _setVisibleImpl: function () {
+            
             this.getElement().style.display = this.isVisible() ? '' : 'none';
         }
     }, {
         extend: ['Oskari.userinterface.component.FormComponent']
     }
-);
+    );

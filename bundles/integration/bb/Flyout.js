@@ -14,59 +14,61 @@ Oskari.clazz.define('Oskari.integration.bundle.bb.Flyout',
  *
  * Always extend this class, never use as is.
  */
-    function (instance, locale, ui) {
-        this.instance = instance;
+function(instance, locale, ui) {
 
-        /* @property locale locale for this */
-        this.locale = locale;
+    this.instance = instance;
 
-        /* @property container the DIV element */
-        this.container = null;
-        this.ui = ui;
-        this.state = null;
+    /* @property locale locale for this */
+    this.locale = locale;
+
+    /* @property container the DIV element */
+    this.container = null;
+    this.ui = ui;
+    this.state = null;
+    this.hasUI = false;
+
+}, {
+    getName : function() {
+        return 'Oskari.integration.bundle.bb.Flyout';
+    },
+    setEl : function(el) {
+        this.container = jQuery(el);
+    },
+    getEl : function() {
+        return this.container;
+    },
+    startPlugin : function() {
+        var me = this,
+            ui = me.ui;
+        ui.setEl(me.container);
+        me.container.append(this.locale.fetchingLayers);
+    },
+    stopPlugin : function() {
+        this.container.empty();
         this.hasUI = false;
-    }, {
-        getName: function () {
-            return 'Oskari.integration.bundle.bb.Flyout';
-        },
-        setEl: function (el) {
-            this.container = jQuery(el);
-        },
-        getEl: function () {
-            return this.container;
-        },
-        startPlugin: function () {
-            var me = this,
-                ui = me.ui;
-            ui.setEl(me.container);
-            me.container.append(this.locale.fetchingLayers);
-        },
-        stopPlugin: function () {
-            this.container.empty();
-            this.hasUI = false;
-        },
-        getTitle: function () {
-            return this.locale.title;
-        },
-        getDescription: function () {
-            return this.locale.description;
-        },
-        setState: function (state) {
-            this.state = state;
-        },
-        getState: function () {
-            return this.state;
-        },
+    },
+    getTitle : function() {
+        return this.locale.title;
+    },
+    getDescription : function() {
+        return this.locale.description;
+    },
+    setState : function(state) {
+        this.state = state;
+    },
+    getState : function() {
+        return this.state;
+    },
 
-        lazyRender: function () {
-            if (!this.hasUI) {
-                this.ui.render();
-                this.hasUI = true;
-            }
-        },
-        render: function () {
+    lazyRender : function() {
+        if(!this.hasUI){
             this.ui.render();
+            this.hasUI = true;
         }
-    }, {
-        'protocol': ['Oskari.userinterface.Flyout']
-    });
+    },
+    render : function() {
+        this.ui.render();
+    }
+}, {
+    'protocol' : ['Oskari.userinterface.Flyout']
+});

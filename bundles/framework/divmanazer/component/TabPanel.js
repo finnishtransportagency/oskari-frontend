@@ -29,7 +29,6 @@ Oskari.clazz.define('Oskari.userinterface.component.TabPanel',
          * @param {String} id id for the panel
          */
         setId: function (id) {
-            var header;
             this.id = id;
             this.html.addClass(id);
             if (!this.header) {
@@ -87,16 +86,15 @@ Oskari.clazz.define('Oskari.userinterface.component.TabPanel',
          * @param {String} icon
          */
         setTitleIcon: function (iconClass, clickHandler) {
-            var header;
             if (!this.header) {
                 header = this.templateTabHeader.clone();
                 this.header = header;
             }
-            var iconDiv = this.templateIconTemplate.clone();
+            var iconDiv =this.templateIconTemplate.clone();
             iconDiv.addClass(iconClass);
-            this.header.find('a').after(iconDiv);
+            this.header.find("a").after(iconDiv);
             if (_.isFunction(clickHandler)) {
-                iconDiv.on('click', clickHandler);
+                iconDiv.bind('click', clickHandler);
             }
         },
 

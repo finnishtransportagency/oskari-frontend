@@ -434,6 +434,12 @@
                     }
                     this._debugPopEvent();
                 }
+
+                // finally clean event memory
+                if (!retainEvent) {
+                    // FIXME only properties should be deleted
+                    delete event;
+                }
             },
 
             /**
@@ -880,12 +886,7 @@
                 if(baseUrl.indexOf('/') === 0) {
                     return serverUrl + baseUrl;
                 }
-                // Add a front slash only if pathname does not end with it
-                if (window.location.pathname[window.location.pathname.length - 1] === '/') {
-                    return serverUrl + window.location.pathname + baseUrl;
-                } else {
-                    return serverUrl + window.location.pathname + '/' + baseUrl;
-                }
+                return serverUrl + window.location.pathname + '/' + baseUrl;
             },
             /**
              * Ensures that the given parameter has ? character and appends & to the end if

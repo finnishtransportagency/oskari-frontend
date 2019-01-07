@@ -14,6 +14,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapmodule.request.MapLayerUpdate
      */
 
     function (sandbox, mapModule) {
+
         this.sandbox = sandbox;
         this.mapModule = mapModule;
     }, {

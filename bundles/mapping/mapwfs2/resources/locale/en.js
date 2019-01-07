@@ -51,10 +51,6 @@ Oskari.registerLocalization({
         "scale_dialog": {
             "title": "Scale updated",
             "msg": "Layer not available on current zoom level"
-        },
-        "layerFilter": {
-            "tooltip": "Show only vector layers",
-            "featuredata": "Vector layers"
         }
     }
 });
