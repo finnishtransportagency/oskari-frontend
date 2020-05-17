@@ -11,7 +11,8 @@ Oskari.registerLocalization(
         },
         "published": {
             "title": "Kartan har skapats för att kunna bäddas in",
-            "desc": "Karta har skapats. Bädda in kartan genom att lägga till HTML-koden nedan till din webbplats och du har kartan på din webbplats:"
+            "desc": "Karta har skapats. Bädda in kartan genom att lägga till HTML-koden nedan till din webbplats och du har kartan på din webbplats:",
+            "copy": "Kopiera till klippbordet"
         },
         "edit": {
             "popup": {
@@ -36,9 +37,10 @@ Oskari.registerLocalization(
             },
             "domain": {
                 "title": "Webbplats",
-                "label": "Tillåt inbäddning endast på följande webbplats",
+                "label": "Begränsa inbäddning endast till följande <br>webbadress:",
                 "placeholder": "Webbplats adress",
-                "tooltip": "Skriv namnet på webbplatsens hemsida dvs. domainnamn utan prefixerna http och www samt utan undersida. Exempel: minhemsida.com"
+                "tooltip": "Skriv namnet på webbplatsens hemsida dvs. domainnamn utan prefixerna http och www samt utan undersida. Exempel: minhemsida.com",
+                "inputWarning": "Kontrollera nätverksadressen du angav"
             },
             "name": {
                 "label": "Kartans namn",
@@ -79,6 +81,8 @@ Oskari.registerLocalization(
                 "MapLegend": "Visa kartförklaringen",
                 "MapRotator": "Tillåt kartrotation",
                 "CrosshairTool": "Visa kartans mittpunkt",
+                "CameraControls3d": "Kameraverktyg",
+                "TimeControl3d": "Tidskontroll",
                 "toolbarToolNames": {
                     "history": "Gå bakåt eller framåt",
                     "history_back": "Gå bakåt",
@@ -104,6 +108,17 @@ Oskari.registerLocalization(
                     "info": "Välj bakgrundskartlager. Du kan göra förval i förhandsgranskningsvyn.",
                     "selectAsBaselayer": "Välj bakgrundskartlager",
                     "allowStyleChange": "Tillåta stiländring"
+                },
+                "mylocation": {
+                    "modes": {
+                        "single": "Enskild",
+                        "continuous": "Fortsatt"
+                    },
+                    "titles": {
+                        "mode": "Funktion",
+                        "mobileOnly": "Tillåt funktionen endast för mobilapparater",
+                        "centerMapAutomatically": "Centrera kartan till användarens plats vid start"
+                    }
                 }
             },
             "toollayout": {

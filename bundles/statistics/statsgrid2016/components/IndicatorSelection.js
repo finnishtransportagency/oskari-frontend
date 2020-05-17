@@ -77,6 +77,11 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.IndicatorSelection', function (
             if (hasRegionSetRestriction) {
                 select.disableOptions(disabledIndicatorIDs);
             }
+            if (select.getOptions().options.length > 0) {
+                select.setEnabled(true);
+            } else {
+                select.setEnabled(false);
+            }
 
             if (result.complete) {
                 me.spinner.stop();
@@ -167,7 +172,9 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.IndicatorSelection', function (
         me.spinner.insertTo(indicatorSelector);
         var indicOptions = {
             placeholder: panelLoc.selectIndicatorPlaceholder,
-            multi: true
+            multi: true,
+            disabled: true,
+            allowOverflow: true
         };
         var indicSelect = new SelectList();
         var indicDropdown = indicSelect.create(null, indicOptions);

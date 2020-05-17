@@ -60,61 +60,61 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapfull.MapFullBundleInstance',
         adjustMapSize: function () {
             var me = this;
 
-            // do not resize map if resizeEnabled is false
-            if (me.resizeEnabled === null || me.resizeEnabled === undefined || me.resizeEnabled) {
-                var contentMap = jQuery('#' + me.contentMapDivId),
-                    dataContent = jQuery('.oskariui-left'),
-                    dataContentHasContent = dataContent.length && !dataContent.is(':empty'),
-                    dataContentWidth = dataContent.width(),
-                    mapContainer = contentMap.find('.oskariui-center'),
-                    mapDiv = jQuery('#' + me.mapDivId),
-                    mapHeight = jQuery(window).height(),
-                    mapWidth = contentMap.width(),
-                    sidebar = jQuery('#sidebar:visible'),
-                    // FIXME: this must be done different way in future
-                    statsgrid = jQuery('.statsgrid:visible:not(.oskari-tile):not(.oskari-flyoutcontent)'),
-
-                    maxWidth = jQuery(window).width() - sidebar.width() - statsgrid.width(),
-                    mapTools = jQuery('#maptools:visible');
-
-                contentMap.height(mapHeight);
-
-                var toolbar = contentMap.find(
-                    '#menutoolbar:visible'
-                );
-                if (toolbar.length > 0) {
-                    mapHeight -= toolbar.height();
-                }
-                dataContent.height(mapHeight);
-                mapDiv.height(mapHeight);
-
-                if (dataContentHasContent) {
-                    if (dataContent.is(':visible') &&
-                            dataContentWidth) {
-                        mapWidth -= dataContentWidth;
-                    }
-                } else {
-                    dataContent.addClass('oskari-closed');
-                }
-
-                if (contentMap.hasClass('oskari-map-window-fullscreen')) {
-                    maxWidth += mapTools.width();
-                    maxWidth += sidebar.width();
-                    var position = sidebar.position();
-                    if (position && position.left) {
-                        maxWidth += position;
-                    }
-                }
-
-                if (mapWidth > maxWidth) {
-                    mapWidth = maxWidth;
-                }
-
-                mapContainer.width(mapWidth);
-
-                // notify map module that size has changed
-                me.updateSize();
+            if (me.resizeEnabled === false) {
+                // do not resize map if resizeEnabled is false
+                return;
             }
+            var contentMap = jQuery('#' + me.contentMapDivId);
+            var dataContent = jQuery('.oskariui-left');
+            var dataContentHasContent = dataContent.length && !dataContent.is(':empty');
+            var dataContentWidth = dataContent.width();
+            var mapContainer = contentMap.find('.oskariui-center');
+            var mapDiv = jQuery('#' + me.mapDivId);
+            var mapHeight = jQuery(window).height();
+            var mapWidth = contentMap.width();
+            var sidebar = jQuery('#sidebar:visible');
+            // FIXME: this must be done different way in future
+            var statsgrid = jQuery('.statsgrid:visible:not(.oskari-tile):not(.oskari-flyoutcontent)');
+            var maxWidth = jQuery(window).width() - sidebar.width() - statsgrid.width();
+            var mapTools = jQuery('#maptools:visible');
+
+            contentMap.height(mapHeight);
+
+            var toolbar = contentMap.find(
+                '#menutoolbar:visible'
+            );
+            if (toolbar.length > 0) {
+                mapHeight -= toolbar.height();
+            }
+            dataContent.height(mapHeight);
+            mapDiv.height(mapHeight);
+
+            if (dataContentHasContent) {
+                if (dataContent.is(':visible') &&
+                        dataContentWidth) {
+                    mapWidth -= dataContentWidth;
+                }
+            } else {
+                dataContent.addClass('oskari-closed');
+            }
+
+            if (contentMap.hasClass('oskari-map-window-fullscreen')) {
+                maxWidth += mapTools.width();
+                maxWidth += sidebar.width();
+                var position = sidebar.position();
+                if (position && position.left) {
+                    maxWidth += position;
+                }
+            }
+
+            if (mapWidth > maxWidth) {
+                mapWidth = maxWidth;
+            }
+
+            mapContainer.width(mapWidth);
+
+            // notify map module that size has changed
+            me.updateSize();
         },
 
         /**
@@ -316,7 +316,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapfull.MapFullBundleInstance',
                     defaultDefs[conf] = defs[conf];
                 }
             });
-            // OL3 uses proj4
+            // OL uses proj4
             if (window.proj4) {
                 // ensure static projections are defined
                 jQuery.each(defaultDefs, function (srs, defs) {
@@ -413,7 +413,6 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapfull.MapFullBundleInstance',
             var rbVisible = Oskari.requestBuilder('MapModulePlugin.MapLayerVisibilityRequest');
 
             me._teardownState(mapmodule);
-
             // map location needs to be set before layers are added
             // otherwise f.ex. wfs layers break on add
             if (ignoreLocation !== true) {
@@ -431,6 +430,10 @@ Oskari.clazz.define('Oskari.mapframework.bundle.mapfull.MapFullBundleInstance',
                     } catch (ex) {
                         Oskari.log(this.getName()).warn('Setting camera failed. Map module does not support 3d.');
                     }
+                }
+                if (state.hasOwnProperty('timePoint')) {
+                    const { date, time, year } = state.timePoint;
+                    sandbox.postRequestByName('SetTimeRequest', [date, time, year]);
                 }
             }
 

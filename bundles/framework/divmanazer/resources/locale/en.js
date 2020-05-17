@@ -143,6 +143,10 @@ Oskari.registerLocalization(
             }
         },
         "VisualizationForm": {
+            "subheaders" : {
+                "name" : "Style name",
+                "style" : "Style"
+            },
             "tooltips": {
                 "dot": "Edit point feature style",
                 "area": "Edit area feature style",
@@ -278,7 +282,7 @@ Oskari.registerLocalization(
         },
         "FilterDialog": {
             "title": "Filter Features",
-            "description": "Filter Features at Layer:",
+            "description": "Select features from layer:",
             "cancelButton": "Cancel",
             "clearButton": "Clear All",
             "refreshButton": "Refresh",

@@ -1,4 +1,4 @@
-const resolveConfig = require('./webpack/resolveConfig.js');
+const resolveConfig = require('./webpack/config.js').RESOLVE;
 // http://eslint.org/docs/user-guide/configuring
 
 module.exports = {
@@ -16,7 +16,6 @@ module.exports = {
     "ClipperLib": false,
     "d3": false,
     "define": false,
-    "GeostatsHelper": false,
     "jQuery": false,
     "jsts": false,
     "MobileDetect": false,
@@ -31,7 +30,8 @@ module.exports = {
     // ---- jest tests
     "describe": false,
     "expect": false,
-    "test": false
+    "test": false,
+    "jest": false
     // ----
   },
   "parserOptions": {

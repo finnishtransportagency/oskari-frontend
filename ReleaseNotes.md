@@ -1,5 +1,107 @@
 # Release Notes
 
+## 1.55.2
+
+- Fix issue with styles on user generated content (myplaces and userlayer layers)
+- Fix visual/layout issues with map scalebar and index map
+- Update OpenLayers 6.2.1 -> 6.3.1
+- Restore an undocumented option for MapMoveRequest to work with just giving bounds without center coordinates. No documentation added as we don't recommend using MapMoveRequest without mandatory x and y coordinates. As bounds can be used to adjust viewport (location and zoom) as only parameter we will probably move this possibility to another request in the future.
+
+## 1.55.1
+
+Main reason for this hotfix was a problem with a vector tile styling library that prevented vector tile layers from being rendered (fixed in https://github.com/openlayers/ol-mapbox-style/pull/262).
+
+For a full list of changes see:
+https://github.com/oskariorg/oskari-frontend/milestone/25?closed=1
+
+Updates to libraries:
+
+- OpenLayers 6.1.1 -> 6.2.1
+- ol-mapbox-style 5.0.2 -> 6.1.1
+- React 16.11.0 -> 16.13.0
+- Styled-components 4.3.2 -> 5.0.1
+- React-beautiful-dnd 12.0.0 -> 13.0.0
+- mobile-detect 1.4.3 -> 1.4.4
+- Removed html-to-image
+
+Other changes:
+
+- Changed implementation for mapmodule.getScreenshot() to restore support for IE
+- Removed misleading old/deprecated documentation/files
+- Fix how supported projections for layers are shown on admin-layereditor
+
+## 1.55.0
+
+For a full list of changes see:
+https://github.com/oskariorg/oskari-frontend/milestone/22?closed=1
+
+New bundle for layer administration: admin-layereditor
+- Currently integrated with layerlist bundle (the React-based layerlisting option) but works with the Oskari request/event API and so can be easily integrated with other layer listing bundles as well
+- LayerModelBuilders now provide information about the layer data they require to function and the fields shown for specific layer type depends on that
+- Also the layer types and versions for layer types that can be managed by the admin is based on layer plugins so this is more extendable approach than before
+- Validation is based on mandatory fields metadata provided by server so the frontend can tell the admin if the server will accept the layer info or not before trying to save it
+- Error handling is much better when adding layers. Reasons for problems are communicated more clearly and in more detail (timeouts, unexpected response from server and what the admin can try to resolve these)
+
+3D:
+- Added a tool/plugin that can be used to control time on the 3D mapmodule. This will affect time in Cesium.js so mostly shadows/sun position at this stage. Time is controllable with the request/event API so RPC can be used for this as well.
+- Added a tool/plugin that can be used to control camera for accessibility when mouse/touch dragging is challenging
+- SetTimeRequest for 3D mapmodule controlling date/time for shadows etc
+
+React components
+- Moved common components and utility to src/react (previously under a bundle)
+- Added Message component for showing localized UI texts
+- Added Messaging component for showing notifications (might be renamed to avoid confusing it with Message component)
+- LocalizationComponent for providing a localizable field for each supported language (common component with admin functionalities)
+- Added a sample bundle for documentary purposes: https://github.com/oskariorg/oskari-frontend/blob/develop/bundles/sample/mymodernbundle/
+
+Other fixes/improvements:
+
+- Fixed an issue with infobox on Firefox: https://github.com/oskariorg/oskari-docs/issues/157
+- Added support for adding multiple custom styles for vector layers in preparation for allowing user to save them (WFS-styles the end user can modify are currently runtime only)
+- Fixed publisher tool layout options
+- Fixed issue with indexmap
+- Fixed some issues with geolocation tracking functionalities
+- Publisher now has a "copy to clipboard" functionality like the link tool
+- Allow download of feature data table for user generated content (my places/userlayer)
+- Added icelandic translations
+- Improvements/fixes for statistical data searches/data fetching/diagram
+- Added text overflow support for vector feature label styling
+
+
+## 1.54.1
+
+For a full list of changes see:
+https://github.com/oskariorg/oskari-frontend/milestone/23?closed=1
+
+- Fixed an issue where user generated my places seemed to disappear while adding new ones
+- Fixed an issue where clicking on an infobox that was NOT opened by map click/GFI caused a new map click to be triggered when clicking the close icon
+- Fixed an issue with statistics indicator selector not working properly on some mobile devices/native scroll component.
+
+## 1.54.0
+
+For a full list of changes see:
+https://github.com/oskariorg/oskari-frontend/milestone/20?closed=1
+
+- Optional 3D-capable mapmodule based on olcesium has been added to Oskari
+- OpenLayers version has been updated to 6.1.1 (Note! paths with /ol3/ references have been updated to /ol/ and you might need to manually update the main.js of your app. See oskari-server/MigrationGuide for details.)
+- Added new React-based bundle implementation for layer listing: framework/layerlist
+- Conditional styling API for vector features has been improved to support ranges etc
+- New option for MapMoveRequest to animate movement
+- New request MapTourRequest for programmatically moving the map through multiple places in a "tour like experience"
+- Performance improvements for vector feature layers
+- Fixed an issue on vector feature styling where a png-icon became "colored" unintentionally
+- Fixed an issue for autocomplete search where spinner was left spinning indefinitely
+- Added new config options for user location tracking (publisher functionality has UI for these to customise embedded maps)
+- Oskari.urls.getRoute() now supports a parameter object. Domain validation method has been added to Oskari.util.
+- Added some more russian translations
+- Other fixes and improvements.
+
+Build & components:
+- Added oskari-ui alias for Oskari's React/AntD-based UI-component library.
+- Improved naming for UI-components like Panel -> CollapsePanel to separate it from other types of Panels etc
+- Introduced a "mutator" concept that is passed to React components via context
+- Fixes for conflicts between current styles and AntD styles
+
 ## 1.53.1
 
 For a full list of changes see:

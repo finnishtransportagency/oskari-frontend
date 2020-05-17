@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { AdminLayerForm } from './AdminLayerForm';
-import { AdminLayerFormService } from './AdminLayerFormService';
-import { GenericContext } from '../../../../src/react/util.jsx';
+import { AdminLayerForm, AdminLayerFormHandler } from './AdminLayerForm';
+import { LayerWizard } from './LayerWizard';
+import { LocaleProvider } from 'oskari-ui/util';
 
 const ExtraFlyout = Oskari.clazz.get('Oskari.userinterface.extension.ExtraFlyout');
 
@@ -10,12 +10,10 @@ export class LayerEditorFlyout extends ExtraFlyout {
     constructor (title, options) {
         super(title, options);
         this.element = null;
-        this.layerId = null;
-        this.layer = null;
         this.loc = null;
         this.dataProviders = [];
         this.mapLayerGroups = [];
-        this.service = new AdminLayerFormService();
+        this.uiHandler = new AdminLayerFormHandler(() => this.update());
         this.on('show', () => {
             if (!this.getElement()) {
                 this.createUi();
@@ -38,47 +36,84 @@ export class LayerEditorFlyout extends ExtraFlyout {
         this.setElement(jQuery('<div></div>'));
         this.addClass('admin-layereditor-flyout');
         this.setContent(this.getElement());
-        this.update(this.layer, this.dataProviders, this.mapLayerGroups, this.loc);
-    }
-    setLayerId (layerId) {
-        this.layerId = layerId;
-        this.update(layerId);
+        this.update();
     }
     setLayer (layer) {
-        this.layer = layer;
-        this.update(layer, this.dataProviders, this.mapLayerGroups, this.loc);
+        if (!layer) {
+            this.uiHandler.resetLayer();
+        } else {
+            this.uiHandler.fetchLayer(layer.getId());
+        }
     }
     setDataProviders (dataProviders) {
         this.dataProviders = dataProviders;
+        this.update();
     }
     setMapLayerGroups (mapLayerGroups) {
         this.mapLayerGroups = mapLayerGroups;
+        this.uiHandler.setMapLayerGroups(mapLayerGroups);
+        this.update();
     }
-
-    update (layer, dataProviders, mapLayerGroups, loc) {
-        const me = this;
+    update () {
         const el = this.getElement();
-        if (layer === null || !el) {
+        if (!el) {
             return;
         }
-        const renderUI = () => {
-            ReactDOM.render(
-                <GenericContext.Provider value={{ loc: loc }}>
+        ReactDOM.render(this.getEditorUI(), el.get(0));
+    }
+    getEditorUI () {
+        const {
+            layer,
+            layerTypes,
+            versions,
+            capabilities,
+            loading,
+            messages,
+            propertyFields,
+            credentialsCollapseOpen,
+            tab,
+            scales
+        } = this.uiHandler.getState();
+        const controller = this.uiHandler.getController();
+        return (
+            <LocaleProvider value={{ bundleKey: 'admin-layereditor' }}>
+                <LayerWizard
+                    layer={layer}
+                    controller={controller}
+                    capabilities={capabilities}
+                    propertyFields={propertyFields}
+                    loading={loading}
+                    layerTypes={layerTypes}
+                    versions={versions}
+                    messages={messages}
+                    credentialsCollapseOpen={credentialsCollapseOpen}
+                    onCancel={() => {
+                        this.uiHandler.clearMessages();
+                        this.uiHandler.clearCredentialsCollapse();
+                    }}>
                     <AdminLayerForm
-                        mutator={this.service.getMutator()}
-                        mapLayerGroups={mapLayerGroups}
-                        dataProviders={dataProviders}
-                        layer={this.service.getLayer()}
-                        message={this.service.getMessage()}
-                        onDelete={() => this.service.deleteLayer()}
-                        onSave={() => this.service.saveLayer()}
-                        onCancel={() => me.hide()} />
-                </GenericContext.Provider>,
-                el.get(0));
-        };
-        this.service.initLayerState(layer);
-        this.service.setListener(renderUI);
-        renderUI();
+                        layer={layer}
+                        controller={controller}
+                        capabilities={capabilities}
+                        propertyFields={propertyFields}
+                        mapLayerGroups={this.mapLayerGroups}
+                        dataProviders={this.dataProviders}
+                        versions={versions}
+                        messages={messages}
+                        rolesAndPermissionTypes={this.uiHandler.getAdminMetadata()}
+                        validators={this.uiHandler.getValidatorFunctions(layer.type)}
+                        validationErrors={this.uiHandler.validateUserInputValues(layer)}
+                        tab={tab}
+                        scales={scales}
+                        onDelete={() => this.uiHandler.deleteLayer()}
+                        onSave={() => this.uiHandler.saveLayer()}
+                        onCancel={() => {
+                            this.uiHandler.clearMessages();
+                            this.hide();
+                        }} />
+                </LayerWizard>
+            </LocaleProvider>
+        );
     }
     cleanUp () {
         const el = this.getElement();
@@ -86,5 +121,6 @@ export class LayerEditorFlyout extends ExtraFlyout {
             return;
         }
         ReactDOM.unmountComponentAtNode(el.get(0));
+        this.uiHandler.clearMessages();
     }
 }

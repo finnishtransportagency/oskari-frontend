@@ -1,19 +1,24 @@
 
 import * as olExtent from 'ol/extent';
 import { defaults as olInteractionDefaults } from 'ol/interaction';
+import KeyboardPan from 'ol/interaction/KeyboardPan';
+import KeyboardZoom from 'ol/interaction/KeyboardZoom';
+import { noModifierKeys, targetNotEditable } from 'ol/events/condition';
+import Collection from 'ol/Collection';
 import olFormatWKT from 'ol/format/WKT';
 import olFormatGeoJSON from 'ol/format/GeoJSON';
 import olView from 'ol/View';
 import { METERS_PER_UNIT as olProjUnitsMETERS_PER_UNIT } from 'ol/proj/Units';
 import * as olProjProj4 from 'ol/proj/proj4';
 import * as olProj from 'ol/proj';
+import { easeOut } from 'ol/easing';
 import olMap from 'ol/Map';
+import 'ol/ol.css';
 import { defaults as olControlDefaults } from 'ol/control';
 import * as olSphere from 'ol/sphere';
 import * as olGeom from 'ol/geom';
 import { fromCircle } from 'ol/geom/Polygon';
 import olFeature from 'ol/Feature';
-
 import { OskariImageWMS } from './plugin/wmslayer/OskariImageWMS';
 import { getOlStyle } from './oskariStyle/generator.ol';
 import { LAYER_ID } from '../mapmodule/domain/constants';
@@ -24,6 +29,7 @@ export class MapModule extends AbstractMapModule {
     constructor (id, imageUrl, options, mapDivId) {
         super(id, imageUrl, options, mapDivId);
         this._dpi = 72; //   25.4 / 0.28;  use OL2 dpi so scales are calculated the same way
+        this.log = Oskari.log('MapModule');
     }
 
     /**
@@ -35,8 +41,6 @@ export class MapModule extends AbstractMapModule {
     _initImpl (sandbox, options, map) {
         // css references use olMap as selectors so we need to add it
         this.getMapEl().addClass('olMap');
-        // disables text-selection on map (fixes an issue in Chrome 69 where dblclick on map selects text and prevents dragging the map)
-        this.getMapEl().addClass('disable-select');
         return map;
     }
 
@@ -59,35 +63,73 @@ export class MapModule extends AbstractMapModule {
             },
             rotate: false
         });
-        var interactions = olInteractionDefaults({
-            altShiftDragRotate: false,
-            pinchRotate: false
-        });
+
         var map = new olMap({
             keyboardEventTarget: document,
             target: this.getMapElementId(),
             controls: controls,
-            interactions: interactions,
-            loadTilesWhileInteracting: true,
-            loadTilesWhileAnimating: true,
+            interactions: this._initInteractions(),
             moveTolerance: 2
         });
 
         var projection = olProj.get(me.getProjection());
         projection.setExtent(this.__boundsToArray(this.getMaxExtent()));
 
-        map.setView(new olView({
+        const viewOpts = {
             extent: projection.getExtent(),
             projection: projection,
             // actual startup location is set with MapMoveRequest later on
             // still these need to be set to prevent errors
             center: [0, 0],
             zoom: 0,
-            resolutions: this.getResolutionArray()
-        }));
+            resolutions: this.getResolutionArray(),
+            constrainResolution: true
+        };
+
+        const worldProjections = ['EPSG:3857', 'EPSG:4326'];
+        if (!worldProjections.includes(me.getProjection())) {
+            // constraint center to extent allowing viewport to extend beyond extent for "local" projections
+            viewOpts.constrainOnlyCenter = true;
+        }
+
+        map.setView(new olView(viewOpts));
 
         me._setupMapEvents(map);
         return map;
+    }
+
+    /**
+     * Creates interactions for map.
+     * Fixes keyboard event bubbling from focusable elements.
+     */
+    _initInteractions () {
+        const interactionOptions = {
+            altShiftDragRotate: false,
+            pinchRotate: false
+        };
+        const keyboardInteractionOptions = {
+            condition: mapBrowserEvent => {
+                if (!noModifierKeys(mapBrowserEvent) || !targetNotEditable(mapBrowserEvent)) {
+                    return false;
+                }
+                const { originalEvent } = mapBrowserEvent;
+                if (originalEvent && originalEvent.target) {
+                    return !['INPUT', 'SELECT', 'TEXTAREA'].includes(originalEvent.target.tagName);
+                }
+                return true;
+            }
+        };
+        const interactions = olInteractionDefaults(interactionOptions).getArray()
+            .map(interaction => {
+                if (interaction instanceof KeyboardPan) {
+                    return new KeyboardPan(keyboardInteractionOptions);
+                }
+                if (interaction instanceof KeyboardZoom) {
+                    return new KeyboardZoom(keyboardInteractionOptions);
+                }
+                return interaction;
+            });
+        return new Collection(interactions, { unique: true });
     }
 
     /**
@@ -105,10 +147,46 @@ export class MapModule extends AbstractMapModule {
             me.notifyStartMove();
         });
 
+        function getElementPath (element) {
+            if (!element) {
+                return [];
+            }
+
+            const path = [];
+            while (element.parentNode !== null) {
+                path.push(element);
+                element = element.parentNode;
+            }
+            return path;
+        }
+
+        function wasInfoBoxClicked (event) {
+            // - Chrome supports event.path.
+            // - Most others composedPath() https://developer.mozilla.org/en-US/docs/Web/API/Event/composedPath
+            // - Polyfilled for IE/Edge on src/polyfills.js
+            var path = event.path || (event.composedPath && event.composedPath()) || [];
+            if (!path.length) {
+                // For some reason Firefox returns an empty array and as we _have_ clicked the map there _should_ at least be the map in the path
+                // try it again...
+                path = getElementPath(event.target) || [];
+            }
+            const foundInfoBox = path.find(item => (item.className || '').indexOf('olPopup') !== -1);
+            return typeof foundInfoBox !== 'undefined';
+        }
+
         map.on('singleclick', function (evt) {
             if (me.getDrawingMode()) {
                 return;
             }
+            if (wasInfoBoxClicked(evt.originalEvent)) {
+                // After OL 6 upgrade:
+                // - ol/MapBrowserEventHandler.emulateClick_ receives map click, dispatches it and schedules it to be triggered again after small delay
+                // - infobox/OpenlayersPopupPlugin receives the click in _setClickEvent() popupElement.onclick -> closes the popup so it's no longer on map
+                // - the delayed event from emulateClick_ triggers and detects that there is no overlay on the spot that was
+                //   clicked (since infobox was removed from that spot on the previous step) triggering a new MapClickedEvent and opening another infobox
+                return;
+            }
+
             var CtrlPressed = evt.originalEvent.ctrlKey;
             var lonlat = {
                 lon: evt.coordinate[0],
@@ -151,7 +229,7 @@ export class MapModule extends AbstractMapModule {
         const sandbox = this._sandbox;
         let ftrService = sandbox.getService('Oskari.mapframework.service.VectorFeatureService');
         if (!ftrService) {
-            ftrService = Oskari.clazz.create('Oskari.mapframework.service.VectorFeatureService', sandbox, this._map);
+            ftrService = Oskari.clazz.create('Oskari.mapframework.service.VectorFeatureService', sandbox, this);
             sandbox.registerService(ftrService);
         }
         this.requestHandlers.vectorLayerRequestHandler = Oskari.clazz.create(
@@ -171,10 +249,11 @@ export class MapModule extends AbstractMapModule {
      * @override @method getStyle
      * @param styleDef Oskari style definition
      * @param geomType One of 'line', 'dot', 'area' | optional
+     * @param requestedStyle layer's or feature's style definition (not overrided with defaults)
      * @return {ol/style/Style}
      **/
-    getStyle (styleDef, geomType) {
-        return getOlStyle(this, styleDef, geomType);
+    getStyle (styleDef, geomType, requestedStyle) {
+        return getOlStyle(this, styleDef, geomType, requestedStyle);
     }
 
     getDefaultMarkerSize () {
@@ -206,6 +285,9 @@ export class MapModule extends AbstractMapModule {
         });
         return hits;
     }
+    _forEachFeatureAtPixelImpl (pixel, callback) {
+        this.getMap().forEachFeatureAtPixel(pixel, callback);
+    }
 
     /* OL3 specific - check if this can be done in a common way
 ------------------------------------------------------------------> */
@@ -236,9 +318,8 @@ export class MapModule extends AbstractMapModule {
     }
 
     /**
-     * Produces an dataurl for PNG-image from the map contents.
+     * Produces an dataurl for PNG-image from the map contents and calls given callback with it.
      * Fails if canvas is "tainted" == contains layers restricting cross-origin use.
-     * @return {String} dataurl, if empty the screenshot failed due to an error (most likely tainted canvas)
      */
     getScreenshot (callback, numOfTries) {
         if (typeof callback !== 'function') {
@@ -260,16 +341,32 @@ export class MapModule extends AbstractMapModule {
             }, 1000);
             return;
         }
-        try {
-            var imageData = null;
-            me.getMap().once('postcompose', function (event) {
-                var canvas = event.context.canvas;
-                imageData = canvas.toDataURL('image/png');
+
+        me.getMap().once('rendercomplete', function () {
+            const mapCanvas = document.createElement('canvas');
+            const size = me.getMap().getSize();
+            mapCanvas.width = size[0];
+            mapCanvas.height = size[1];
+            const mapContext = mapCanvas.getContext('2d');
+            Array.prototype.forEach.call(document.querySelectorAll('.ol-layer canvas'), function (canvas) {
+                if (canvas.width > 0) {
+                    const opacity = canvas.parentNode.style.opacity;
+                    mapContext.globalAlpha = opacity === '' ? 1 : Number(opacity);
+                    const transform = canvas.style.transform;
+                    // Get the transform parameters from the style's transform matrix
+                    const matrix = transform.match(/^matrix\(([^(]*)\)$/)[1].split(',').map(Number);
+                    // Apply the transform to the export map context
+                    CanvasRenderingContext2D.prototype.setTransform.apply(mapContext, matrix);
+                    mapContext.drawImage(canvas, 0, 0);
+                }
             });
+            callback(mapCanvas.toDataURL());
+        });
+
+        try {
             me.getMap().renderSync();
-            callback(imageData);
         } catch (err) {
-            me.getSandbox().printWarn('Error producing a screenshot' + err);
+            me.log.warn('Error in screenshot map render sync: ' + err);
             callback('');
         }
     }
@@ -492,7 +589,7 @@ export class MapModule extends AbstractMapModule {
      */
     zoomToExtent (bounds, suppressStart, suppressEnd) {
         var extent = this.__boundsToArray(bounds);
-        this.getMap().getView().fit(extent, this.getMap().getSize());
+        this.getMap().getView().fit(extent);
         this.updateDomain();
         // send note about map change
         if (suppressStart !== true) {
@@ -531,31 +628,174 @@ export class MapModule extends AbstractMapModule {
     }
 
     /**
+     * @method animateTo
+     * Animate from current x/y to requested x/y
+     * Usable animations: fly/pan/zoomPan
+     * @param {Object} lonlat coordinates to move the map to
+     * @param {Number} zoom absolute zoomlevel to set the map to
+     * @param {String} animation animation name
+     * @param {Number}  duration animation duration time
+     * @param {Function} done function callback
+     * @return {Boolean} success
+     */
+    _animateTo (lonlat, zoom, animation, duration, done) {
+        if (!this.isValidLonLat(lonlat.lon, lonlat.lat)) {
+            return false;
+        }
+
+        const location = [lonlat.lon, lonlat.lat];
+        const view = this.getMap().getView();
+        let called = false;
+        let parts = animation === 'fly' ? 2 : 1;
+        duration = duration || 3000;
+        done = typeof (done) === 'function' ? done : (x) => x;
+
+        function callback (complete) {
+            --parts;
+            if (called) {
+                return;
+            }
+            if (parts === 0 || !complete) {
+                called = true;
+                // Animation ready, call the next point
+                done(complete);
+            }
+        }
+
+        switch (animation) {
+        case 'pan':
+            view.animate({
+                center: location,
+                duration: duration
+            }, callback);
+            break;
+        case 'fly':
+            const flyZoom = view.getZoom();
+            view.animate({
+                center: location,
+                duration: duration
+            }, callback);
+            view.animate({
+                zoom: flyZoom - 1,
+                duration: duration / 2
+            }, {
+                zoom: flyZoom,
+                duration: duration / 2
+            }, callback);
+            break;
+        case 'zoomPan':
+            view.animate({
+                center: location,
+                zoom: zoom,
+                duration: duration,
+                easing: easeOut
+            }, callback);
+            break;
+        default:
+            view.setCenter(location);
+            if (!isNaN(zoom)) {
+                view.setZoom(zoom);
+            }
+            callback(true);
+            break;
+        }
+        return true;
+    }
+
+    /**
      * @method centerMap
      * Moves the map to the given position and zoomlevel.
      * @param {Number[] | Object} lonlat coordinates to move the map to
-     * @param {Number} zoomLevel absolute zoomlevel to set the map to
-     * @param {Boolean} suppressEnd true to NOT send an event about the map move
-     *  (other components wont know that the map has moved, only use when chaining moves and
-     *     wanting to notify at end of the chain for performance reasons or similar) (optional)
+     * @param {Object | Number} zoomLevel absolute zoomlevel to set the map to
+     * @param {Boolean} suppressEnd deprecated
+     * @param {Object} options options, such as animation and duration
+     *     Usable animations: fly/pan/zoomPan
      * @return {Boolean} success
      */
-    centerMap (lonlat, zoom, suppressEnd) {
+    centerMap (lonlat, zoom, suppressEnd, options = {}) {
+        const view = this.getMap().getView();
+        const animation = options.animation ? options.animation : '';
+        const duration = options.duration ? options.duration : 3000;
+
         lonlat = this.normalizeLonLat(lonlat);
         if (!this.isValidLonLat(lonlat.lon, lonlat.lat)) {
             return false;
         }
-        this.getMap().getView().setCenter([lonlat.lon, lonlat.lat]);
+
         if (zoom === null || zoom === undefined) {
-            zoom = this.getMapZoom();
+            zoom = { type: 'zoom', value: this.getMapZoom() };
+        } else {
+            const { top, bottom, left, right } = zoom.value || zoom;
+            if (top && left && bottom && right) {
+                const zoomOut = top === bottom && left === right;
+                const suppressEvent = zoomOut;
+                this.zoomToExtent({ top, bottom, left, right }, suppressEvent, suppressEvent);
+                if (zoomOut) {
+                    this.zoomToScale(2000);
+                }
+                view.setCenter([lonlat.lon, lonlat.lat]);
+                return true;
+            }
         }
-        this.getMap().getView().setZoom(zoom);
-        this.updateDomain();
-        if (suppressEnd !== true) {
-            this.notifyMoveEnd();
+        if (!isNaN(zoom)) {
+            // backwards compatibility
+            zoom = { type: 'zoom', value: zoom };
         }
+
+        const zoomValue = zoom.type === 'scale' ? view.getZoomForResolution(zoom.value) : zoom.value;
+        this._animateTo(lonlat, zoomValue, animation, duration);
         return true;
     }
+
+    /**
+     * @method tourMap
+     * Moves the map from point to point
+     * @param {Object[]} coordinates array of coordinates to move the map along
+     * @param {Object | Number} zoom absolute zoomlevel to set the map to
+     * @param {Object} options options, such as animation and duration
+     *     Usable animations: fly/pan/zoomPan
+     */
+    tourMap (coordinates, zoom, options) {
+        const view = this.getMap().getView();
+        const me = this;
+        const duration = options && options.duration ? options.duration : 3000;
+        const delayOption = options && options.delay ? options.delay : 750;
+        const animation = options && options.animation ? options.animation : '';
+
+        if (zoom === null || zoom === undefined) {
+            zoom = { type: 'zoom', value: this.getMapZoom() };
+        }
+
+        const zoomDefault = zoom.type === 'scale' ? view.getZoomForResolution(zoom.value) : zoom.value;
+        let index = -1;
+        let delay = 0;
+        let status = { steps: coordinates.length, step: 0 };
+
+        const next = (more) => {
+            me.notifyTourEvent(status, !more);
+            if (!more) {
+                // if we are done we can stop here
+                return;
+            }
+            // go to the next step
+            ++index;
+            if (index < coordinates.length) {
+                // Check if location has overrides for animation values
+                const location = coordinates[index];
+                const zoomValue = location.zoom || zoomDefault;
+                const animationValue = location.animation || animation;
+                const durationValue = location.duration || duration;
+                status = { ...status, step: index + 1 };
+                setTimeout(function () {
+                    me._animateTo(location, zoomValue, animationValue, durationValue, next);
+                }, delay);
+                // set Delay for next point
+                delay = location.delay || delayOption;
+            }
+        };
+        next(true);
+    }
+
     /**
      * Get maps current extent.
      * @method getCurrentExtent
@@ -1003,6 +1243,11 @@ export class MapModule extends AbstractMapModule {
     getGeoJSONFromFeatures (features) {
         var olGeoJSON = new olFormatGeoJSON();
         return olGeoJSON.writeFeaturesObject(features);
+    }
+
+    setTime () {
+        var log = Oskari.log('Oskari.mapframework.ui.module.common.MapModule');
+        log.warn('setTime only available in 3D map');
     }
 
     getOLGeometryFromGeoJSON (geojson) {

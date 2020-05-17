@@ -11,7 +11,8 @@ Oskari.registerLocalization(
         },
         "published": {
             "title": "Upotettu kartta on valmis",
-            "desc": "Kartta on valmis. Julkaise kartta verkkosivulla liittämällä alla oleva html-koodi verkkosivun koodiin:"
+            "desc": "Kartta on valmis. Julkaise kartta verkkosivulla liittämällä alla oleva html-koodi verkkosivun koodiin:",
+            "copy": "Kopioi leikepöydälle"
         },
         "edit": {
             "popup": {
@@ -36,9 +37,10 @@ Oskari.registerLocalization(
             },
             "domain": {
                 "title": "Julkaisutiedot",
-                "label": "Salli kartan upotus vain seuraavaan sivustoon",
+                "label": "Rajoita kartan upotus vain seuraavaan <br>verkko-osoitteeseen:",
                 "placeholder": "Sivuston osoite",
-                "tooltip": "Anna verkkosivuston osoite eli domain-nimi ilman http- tai www-etuliitettä tai alasivun osoitetta. Esimerkiksi: omakotisivu.com."
+                "tooltip": "Anna verkkosivuston osoite eli domain-nimi ilman http- tai www-etuliitettä tai alasivun osoitetta. Esimerkiksi: omakotisivu.com.",
+                "inputWarning": "Tarkista syötetty verkko-osoite"
             },
             "name": {
                 "label": "Kartan nimi (pakollinen tieto)",
@@ -80,6 +82,8 @@ Oskari.registerLocalization(
                 "MapLegend": "Näytä karttaselitteet",
                 "MapRotator": "Salli kartan pyörittäminen",
                 "CrosshairTool": "Näytä kartan keskipiste",
+                "CameraControls3d": "Kameratyökalut",
+                "TimeControl3d": "Ajanhetken säädin",
                 "toolbarToolNames": {
                     "history": "Siirtyminen edelliseen ja seuraavaan näkymään",
                     "history_back": "Siirtyminen edelliseen näkymään",
@@ -105,6 +109,17 @@ Oskari.registerLocalization(
                     "info": "Valitse taustakarttoina näytettävät karttatasot. Oletusvalinnan voit tehdä esikatselukartassa.",
                     "selectAsBaselayer": "Taustakarttataso",
                     "allowStyleChange": "Salli esitystyylin valinta"
+                },
+                "mylocation": {
+                    "modes": {
+                        "single": "Yksittäinen",
+                        "continuous": "Jatkuva"
+                    },
+                    "titles": {
+                        "mode": "Toiminto",
+                        "mobileOnly": "Käytä toimintoja vain mobiililaitteissa",
+                        "centerMapAutomatically": "Keskitä käyttäjän sijaintiin automaattisesti kartan käynnistyessä"
+                    }
                 }
             },
             "toollayout": {

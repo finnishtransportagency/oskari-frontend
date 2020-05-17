@@ -10,50 +10,56 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.Diagram', function (service, lo
         repaint: false
     };
     this.events();
+    this._dataChartsEl = null;
+    this._size = {};
 }, {
     _template: {
-        container: jQuery('<div></div>')
+        container: jQuery('<div class="graph-container"></div>')
     },
     /**
      * @method  @public render Render diagram
      * @param  {Object} el jQuery element
      */
-    render: function (el, options) {
-        var me = this;
-        if (options) {
-            me._chartInstance.setResizable(!!options.resizable);
-        }
+    render: function (el, size) {
         if (this.element) {
             // already rendered, just move the element to new el when needed
             if (el !== this.element.parent()) {
                 this.element.detach();
                 el.append(this.element);
             }
-            // update ui if diagram is resizable
-            if (options && options.resizable) {
-                me.updateUI(options);
-            }
             return;
         }
         this.element = this._template.container.clone();
         el.append(this.element);
-        this.updateUI(options);
+        this._dataChartsEl = el;
+        if (size) {
+            this.resizeUI(size);
+        } else {
+            this.updateUI();
+        }
     },
-    updateUI: function (options) {
+    resizeUI: function (size) {
+        const { maxHeight, width } = size;
+        if (maxHeight) {
+            this._size.maxHeight = maxHeight;
+        }
+        if (width) {
+            this._size.width = width;
+        }
+        this.updateUI();
+    },
+    updateUI: function () {
         var me = this;
         var el = this.element;
         if (!el) {
             // ui not yet created so no need to update it
             return;
         }
-
-        if (!this.hasIndicators()) {
+        const indicator = this.service.getStateService().getActiveIndicator();
+        if (!indicator) {
             this.clearChart();
-            this.element.html(this.loc.statsgrid.noResults);
+            el.html(this.loc.statsgrid.noResults);
             return;
-        } else if (this._chartElement) {
-            // reattach possibly detached component
-            el.html(this._chartElement);
         }
         if (this._renderState.inProgress) {
             // handle render being called multiple times in quick succession
@@ -63,24 +69,20 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.Diagram', function (service, lo
             return;
         }
         this._renderState.inProgress = true;
-        this.getIndicatorData(this.getIndicator(), function (data) {
-            if (!data) {
-                me._renderDone();
-                return;
-            }
+        this.getIndicatorData(indicator, function (data) {
             var isUndefined = function (element) {
                 return element.value === undefined;
             };
-
-            if (data.every(isUndefined)) {
+            if (!data || data.every(isUndefined)) {
                 me.clearChart();
                 me._renderDone();
-                me.element.html(me.loc.statsgrid.noValues);
+                el.html(me.loc.statsgrid.noValues);
                 return;
             }
-            var classificationOpts = me.service.getStateService().getClassificationOpts(me.getIndicator().hash);
-            var fractionDigits = typeof classificationOpts.fractionDigits === 'number' ? classificationOpts.fractionDigits : 1;
-            var formatter = Oskari.getNumberFormatter(fractionDigits);
+            const { fractionDigits } = indicator.classification;
+            const digits = typeof fractionDigits === 'number' ? fractionDigits : 1;
+            var formatter = Oskari.getNumberFormatter(digits);
+            const { maxHeight, width } = me._size;
             var chartOpts = {
                 colors: me.getColorScale(data),
                 valueRenderer: function (val) {
@@ -88,34 +90,27 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.Diagram', function (service, lo
                         return null;
                     }
                     return formatter.format(val);
-                }
+                },
+                margin: {
+                    top: 0,
+                    bottom: 20
+                },
+                width
             };
-
-            if (me._chartInstance.isResizable()) {
-                var dataCharts = jQuery(el).closest('.oskari-datacharts');
-                if (options && options.height) {
-                    // height for flyout toolbar, defaults to 57px (.oskari-flyouttoolbar height)
-                    const heightOffset = jQuery(el).closest('.oskari-flyout').find('.oskari-flyouttoolbar:first').height() || 57;
-                    jQuery(el).closest('.oskari-flyoutcontentcontainer').css('max-height', 'none').height(options.height - heightOffset);
-                }
-                if (options && options.width) {
-                    // helps to calculate container width for chart, defaults to 16px + 16px padding
-                    const widthOffset = (parseInt(dataCharts.css('padding-left').replace(/[^-\d.]/g, '')) +
-                        parseInt(dataCharts.css('padding-right').replace(/[^-\d.]/g, ''))) || 32;
-                    chartOpts.width = options.width - widthOffset;
-                    dataCharts.width(options.width - widthOffset);
-                }
+            if (maxHeight) {
+                el.css('max-height', maxHeight);
             }
-
             if (!me._chartElement) {
                 me._chartElement = me.createBarCharts(data, chartOpts);
                 el.html(me._chartElement);
             } else {
+                // reattach possibly detached component
+                el.html(me._chartElement);
                 me.getChartInstance().redraw(data, chartOpts);
             }
 
             var labels = me.getChartHeaderElement();
-            el.parent().parent().find('.axisLabel').append(labels);
+            me._dataChartsEl.find('.axisLabel').append(labels);
 
             me._renderDone();
         });
@@ -167,31 +162,28 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.Diagram', function (service, lo
             chart.clear();
         }
     },
-    getIndicator: function () {
-        return this.service.getStateService().getActiveIndicator();
-    },
     hasIndicators: function () {
-        return !!this.service.getStateService().getIndicators().length;
+        return this.service.getStateService().hasIndicators();
     },
-    getIndicatorData: function (indicator, callback) {
-        if (!indicator) {
-            callback();
-            return;
-        }
-        this.service.getCurrentDataset(function (err, response) {
+    getIndicatorData: function (ind, callback) {
+        const setId = this.service.getStateService().getRegionset();
+        const { datasource, indicator, selections, series } = ind;
+        this.service.getRegions(setId, (err, regions) => {
             if (err) {
                 callback();
                 return;
             }
-            var indicatorData = [];
-            response.data.forEach(function (dataItem) {
-                indicatorData.push({
-                    name: dataItem.name,
-                    value: dataItem.values[indicator.hash],
-                    id: dataItem.id
+            this.service.getIndicatorData(datasource, indicator, selections, series, setId, (err, data) => {
+                if (err) {
+                    callback();
+                    return;
+                }
+                const response = regions.map(({ id, name }) => {
+                    const value = data[id];
+                    return { id, name, value };
                 });
+                callback(response);
             });
-            callback(indicatorData);
         });
     },
     /**
@@ -272,6 +264,17 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.Diagram', function (service, lo
             }
         });
         this.service.on('StatsGrid.RegionsetChangedEvent', function () {
+            me.updateUI();
+        });
+        this.service.on('StatsGrid.ParameterChangedEvent', function () {
+            me.updateUI();
+        });
+        this.service.on('StatsGrid.StateChangedEvent', function (event) {
+            if (event.isReset()) {
+                me.updateUI();
+            }
+        });
+        this.service.on('StatsGrid.ClassificationChangedEvent', function () {
             me.updateUI();
         });
     }

@@ -545,13 +545,80 @@ import { UnsupportedLayerReason } from '../domain/UnsupportedLayerReason';
             return reasons;
         },
         /**
+         * @public @method groupUnsupportedLayerReasons To group UnsupportedLayerReasons based on severity.
+         * @param { UnsupportedLayerReason[] } reasons
+         * @return { Object { fatals: UnsupportedLayerReason[], infos: UnsupportedLayerReason[], warnings: UnsupportedLayerReason[] }} reasons
+         */
+        groupUnsupportedLayerReasons: function (reasons) {
+            if (!reasons) {
+                return;
+            }
+
+            return reasons.reduce((groups, cur) => {
+                if (cur.getSeverity() >= UnsupportedLayerReason.FATAL) {
+                    groups.fatals = groups.fatals || [];
+                    groups.fatals.push(cur);
+                } else if (cur.getSeverity() < UnsupportedLayerReason.WARNING) {
+                    groups.infos = groups.infos || [];
+                    groups.infos.push(cur);
+                } else {
+                    groups.warnings = groups.warnings || [];
+                    groups.warnings.push(cur);
+                }
+                return groups;
+            }, {});
+        },
+        /**
+         * @public @method getMostSevereUnsupportedLayerReason
+         * To get most severe reason found from reasons with following logic:
+         *  1. First fatal if present
+         *  2. First warning if present
+         *  3. First info if present
+         * @param {UnsupportedLayerReason[] | layer} reasonsOrLayer
+         * @return {UnsupportedLayerReason} reason
+         */
+        getMostSevereUnsupportedLayerReason: function (reasonsOrLayer) {
+            if (!reasonsOrLayer) {
+                return;
+            }
+            let reasons = reasonsOrLayer;
+            if (!Array.isArray(reasonsOrLayer)) {
+                reasons = this.getUnsupportedLayerReasons(reasonsOrLayer);
+                if (!reasons) {
+                    return;
+                }
+            }
+            const grouped = this.groupUnsupportedLayerReasons(reasons);
+            const { fatals, warnings, infos } = grouped;
+            const groupBySeverity = fatals || warnings || infos;
+            return groupBySeverity.length > 0 ? groupBySeverity[0] : undefined;
+        },
+        /**
          * @method addLayerSupportCheck
          * For layer support checking.
          *
          * @param {UnsupportedLayerReason} layerUnsupportedReason
          */
         addLayerSupportCheck: function (layerUnsupportedReason) {
+            if (typeof layerUnsupportedReason.getLayerCheckFunction !== 'function') {
+                return;
+            }
             this._layerSupportedChecks[layerUnsupportedReason.getId()] = layerUnsupportedReason.getLayerCheckFunction();
+
+            // notify change on unsupported layers
+            const affectedLayers = this.getLayers()
+                .map(layer => {
+                    const supported = layerUnsupportedReason.getLayerCheckFunction()(layer);
+                    if (supported instanceof UnsupportedLayerReason) {
+                        return layer;
+                    }
+                })
+                .filter(layer => typeof layer !== 'undefined');
+
+            if (affectedLayers.length !== 0) {
+                const event = Oskari.eventBuilder('MapLayerEvent')(null, 'update');
+                this._sandbox.notifyAll(event);
+            }
         }
     }, {
         /**

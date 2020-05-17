@@ -6,6 +6,8 @@ import * as olProj from 'ol/proj';
 import { OskariImageWMS } from './OskariImageWMS';
 import { OskariTileWMS } from './OskariTileWMS';
 
+const LayerComposingModel = Oskari.clazz.get('Oskari.mapframework.domain.LayerComposingModel');
+
 /**
  * @class Oskari.mapframework.mapmodule.WmsLayerPlugin
  * Provides functionality to draw WMS layers on the map
@@ -26,6 +28,29 @@ Oskari.clazz.define(
 
         getLayerTypeSelector: function () {
             return 'WMS';
+        },
+
+        _initImpl () {
+            const mapLayerService = Oskari.getSandbox().getService('Oskari.mapframework.service.MapLayerService');
+            const layerClass = 'Oskari.mapframework.domain.WmsLayer';
+            const composingModel = new LayerComposingModel([
+                LayerComposingModel.CAPABILITIES,
+                LayerComposingModel.CAPABILITIES_STYLES,
+                LayerComposingModel.CREDENTIALS,
+                LayerComposingModel.GFI_CONTENT,
+                LayerComposingModel.GFI_TYPE,
+                LayerComposingModel.GFI_XSLT,
+                LayerComposingModel.LEGEND_IMAGE,
+                LayerComposingModel.REALTIME,
+                LayerComposingModel.REFRESH_RATE,
+                LayerComposingModel.SELECTED_TIME,
+                LayerComposingModel.SRS,
+                LayerComposingModel.STYLE,
+                LayerComposingModel.URL,
+                LayerComposingModel.VERSION
+            ], ['1.1.1', '1.3.0']);
+            const type = this.getLayerTypeSelector().toLowerCase() + 'layer';
+            mapLayerService.registerLayerModel(type, layerClass, composingModel);
         },
 
         _createPluginEventHandlers: function () {

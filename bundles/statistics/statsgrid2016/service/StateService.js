@@ -32,7 +32,6 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.StateService',
             },
             classificationPluginState: {
                 editEnabled: true,
-                visible: true,
                 transparent: false
             }
         };
@@ -93,7 +92,7 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.StateService',
             }
         },
 
-        getClassificationMutator: function () {
+        getClassificationController: function () {
             const eventBuilder = Oskari.eventBuilder('StatsGrid.ClassificationChangedEvent');
             return {
                 setActiveIndicator: hash => this.setActiveIndicator(hash),
@@ -102,7 +101,7 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.StateService',
                     if (indicator) {
                         indicator.classification[key] = value;
                         if (eventBuilder) {
-                            this.sandbox.notifyAll(eventBuilder(indicator.classification));
+                            this.sandbox.notifyAll(eventBuilder(indicator.classification, { [key]: value }));
                         }
                     }
                 },
@@ -113,7 +112,7 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.StateService',
                             indicator.classification[key] = obj[key];
                         });
                         if (eventBuilder) {
-                            this.sandbox.notifyAll(eventBuilder(indicator.classification));
+                            this.sandbox.notifyAll(eventBuilder(indicator.classification, obj));
                         }
                     }
                 }
@@ -123,16 +122,64 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.StateService',
          * Resets the current state and sends events about the changes.
          * Removes all selected indicators, selected region and regionset is set to undefined
          */
-        reset: function () {
-            var previousIndicator = this.activeIndicator;
+        resetState: function () {
+            this.activeIndicator = null;
+            this.regionset = null;
             this.indicators = [];
-            this.classification = null;
-            this.setActiveIndicator();
-            this.setRegionset();
-            this.toggleRegion(null);
-            // notify
-            var eventBuilder = Oskari.eventBuilder('StatsGrid.ActiveIndicatorChangedEvent');
-            this.sandbox.notifyAll(eventBuilder(this.activeIndicator, previousIndicator));
+            this.activeRegion = null;
+            const eventBuilder = Oskari.eventBuilder('StatsGrid.StateChangedEvent');
+            this.sandbox.notifyAll(eventBuilder(true));
+        },
+        setState: function (state = {}) {
+            const { regionset, indicators = [], active: activeHash, activeRegion } = state;
+            this.regionset = regionset;
+            this.activeRegion = activeRegion;
+            // map to keep stored states work properly
+            this.indicators = indicators.map(ind => {
+                const hash = ind.hash || this.getHash(ind.ds, ind.id, ind.selections, ind.series);
+                return {
+                    datasource: Number(ind.ds),
+                    indicator: ind.id,
+                    selections: ind.selections,
+                    series: ind.series,
+                    hash,
+                    classification: ind.classification || this.getClassificationOpts(hash)
+                };
+            // published maps or saved views may contain dublicate indicators => filter dublicates
+            }).filter((ind, i, inds) => inds.findIndex(find => (find.hash === ind.hash)) === i);
+
+            let active = this.indicators.find(ind => ind.hash === activeHash);
+            if (active) {
+                const { classification, series, selections } = active;
+                if (classification) {
+                    this.lastSelectedClassification = classification;
+                }
+                if (series) {
+                    this.seriesService.setValues(series.values, selections[series.id]);
+                }
+            }
+            this.activeIndicator = active || null;
+            const eventBuilder = Oskari.eventBuilder('StatsGrid.StateChangedEvent');
+            this.sandbox.notifyAll(eventBuilder());
+        },
+        getState: function () {
+            // map to keep stored states work properly
+            const indicators = this.indicators.map(ind => {
+                return {
+                    ds: ind.datasource,
+                    id: ind.indicator,
+                    selections: ind.selections,
+                    series: ind.series,
+                    classification: ind.classification || this.getClassificationOpts(ind.hash)
+                };
+            });
+            const activeInd = this.getActiveIndicator();
+            return {
+                indicators,
+                active: activeInd ? activeInd.hash : null,
+                activeRegion: this.getRegion(),
+                regionset: this.getRegionset()
+            };
         },
         /**
          * Returns id of the current regionset
@@ -272,7 +319,6 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.StateService',
          */
         setActiveIndicator: function (indicatorHash) {
             var me = this;
-
             clearTimeout(me._timers.setActiveIndicator);
 
             // This must be on some way to discard set active indicator if calling repeatly.
@@ -359,7 +405,6 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.StateService',
             // notify
             var eventBuilder = Oskari.eventBuilder('StatsGrid.IndicatorEvent');
             this.sandbox.notifyAll(eventBuilder(ind.datasource, ind.indicator, ind.selections, ind.series));
-
             return ind;
         },
         /**
@@ -372,7 +417,6 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.StateService',
          * @return {Object}            an object describing the removed indicator (includes parameters as an object)
          */
         removeIndicator: function (datasrc, indicator, selections, series) {
-            var me = this;
             var newIndicators = [];
             var hash = this.getHash(datasrc, indicator, selections, series);
             var removedIndicator = null;
@@ -383,23 +427,20 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.StateService',
                     removedIndicator = ind;
                 }
             });
-            if (me.classification !== null && me.classification[hash]) {
-                me.classification[hash] = null;
-                delete me.classification[hash];
-            }
             this.indicators = newIndicators;
 
             if (removedIndicator && removedIndicator.hash && this.activeIndicator && this.activeIndicator.hash === removedIndicator.hash) {
                 // active was the one removed -> reset active
                 this.setActiveIndicator();
             }
-            // notify
-            var eventBuilder = Oskari.eventBuilder('StatsGrid.IndicatorEvent');
-            this.sandbox.notifyAll(eventBuilder(datasrc, indicator, selections, series, true));
-
-            // if no indicators then reset active region
-            if (this.indicators.length === 0) {
-                this.toggleRegion(null);
+            if (this.hasIndicators()) {
+                // notify
+                var eventBuilder = Oskari.eventBuilder('StatsGrid.IndicatorEvent');
+                this.sandbox.notifyAll(eventBuilder(datasrc, indicator, selections, series, true));
+            } else {
+                // if no indicators then reset state
+                // last indicator removal should act like all indicators or layer was removed
+                this.resetState();
             }
 
             return removedIndicator;

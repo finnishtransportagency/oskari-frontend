@@ -14,7 +14,7 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.IndicatorList', function (servi
         indicator: _.template(
             `<li>
                 <div>
-                    \${name}
+                    <span title="\${full}">\${name}</span>
                     <div class="indicator-list-info icon-info"/>
                     <div class="indicator-list-remove icon-close" data-ind-hash="\${indHash}"/>
                 </div>
@@ -40,7 +40,10 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.IndicatorList', function (servi
         me.service.on('StatsGrid.IndicatorEvent', function (event) {
             me._updateIndicatorList();
         });
-        me.service.on('StatsGrid.ActiveIndicatorChangedEvent', function (event) {
+        me.service.on('StatsGrid.ParameterChangedEvent', function (event) {
+            me._updateIndicatorList();
+        });
+        me.service.on('StatsGrid.StateChangedEvent', function (event) {
             me._updateIndicatorList();
         });
     },
@@ -67,7 +70,8 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.IndicatorList', function (servi
         indicators.forEach(function (ind, id) {
             me.service.getUILabels(ind, function (labels) {
                 var indElem = jQuery(me.__templates.indicator({
-                    name: labels.full,
+                    name: me._getIndicatorText(labels),
+                    full: labels.full,
                     indHash: ind.hash
                 }));
                 content.find('.statsgrid-indicator-list').append(indElem);
@@ -83,6 +87,23 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.IndicatorList', function (servi
         });
         return content;
     },
+    _getIndicatorText (labels) {
+        const { indicator, params, full } = labels;
+        let cutLength = 60;
+        let minLength = 20;
+        const dots = '... ';
+        if (indicator && full.length > cutLength) {
+            if (params) {
+                cutLength = cutLength - dots.length - params.length;
+                return indicator.substring(0, Math.max(minLength, cutLength)) + dots + params;
+            } else {
+                cutLength = cutLength - dots.length;
+                return indicator.substring(0, cutLength) + dots;
+            }
+        } else {
+            return full;
+        }
+    },
     /**
      * @method _initializeElement
      * Initializes wrapper element with its contents
@@ -97,7 +118,7 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.IndicatorList', function (servi
         var removeAllBtn = me._removeAllBtn;
         removeAllBtn.setTitle(me.loc('indicatorList.removeAll'));
         removeAllBtn.setHandler(function () {
-            me._removeAllIndicators();
+            me.service.getStateService().resetState();
         });
         // Add button to content
         removeAllBtn.insertTo(content);
@@ -105,14 +126,6 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.IndicatorList', function (servi
         this.element.append(content);
         // Update indicator list
         me._updateIndicatorList();
-    },
-    /**
-     * @method _removeAllIndicators
-     * Removes all indicators via {Oskari.statistics.statsgrid.StateService}
-     */
-    _removeAllIndicators: function () {
-        this.service.getStateService().reset();
-        this._updateIndicatorList();
     },
     /**
      * @method _updateIndicatorList

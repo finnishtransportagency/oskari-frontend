@@ -225,6 +225,7 @@ body {
     font-size: 11px;
     text-align: left;
     text-transform: uppercase;
+    user-select: none;
 }
 
 .oskari-tile-attached .oskari-tile-title {
@@ -374,7 +375,6 @@ body {
         padding: 0;
         border: 0;
         overflow: auto;
-        max-height: 300px;
     }
 }
 

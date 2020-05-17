@@ -734,6 +734,44 @@ Oskari.util = (function () {
         } catch (ignore) {}
         return error;
     }
+    /**
+    * Function to validate network domain.
+    * Implemented by modifying function introduced in https://miguelmota.com/bytes/validate-domain-regex/
+    *
+    * @param {domain} domain to be validated
+    * @return {Boolean} true if domain is valid, false otherwise.
+    */
+    util.isValidDomain = (domain) => {
+       if (!domain) {
+           return false;
+       }
+       const re = /^(?!:\/\/)([a-zA-Z0-9-]+\.){0,5}[a-zA-Z0-9-][a-zA-Z0-9-]+\.[a-zA-Z]{2,64}?$/gi;
+       return re.test(domain);
+    }
+    /**
+    * Function to copy text to clipboard
+    *
+    * @param {String} text to be copied to clipboard
+    * @param {jQuery} el element which is animated
+    */
+    util.copyTextToClipboard = (text, el) => {
+        if (typeof text !== 'string') {
+            return;
+        }
+        var input = document.createElement('input');
+        document.body.appendChild(input);
+        input.value = text;
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        if (el) {
+            const cls = 'oskari-copy-effect'
+            el.addClass(cls);
+            setTimeout(() => {
+                el.removeClass(cls);
+            }, 500);
+        }
+    }
 
     return util;
 }());

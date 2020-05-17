@@ -11,7 +11,8 @@ Oskari.registerLocalization(
         },
         "published": {
             "title": "Embedded Map Saved",
-            "desc": "The embedded map has been saved. Publish it on your website by copying this code to the html code on your website:"
+            "desc": "The embedded map has been saved. Publish it on your website by copying this code to the html code on your website:",
+            "copy": "Copy to the clipboard"
         },
         "edit": {
             "popup": {
@@ -36,9 +37,10 @@ Oskari.registerLocalization(
             },
             "domain": {
                 "title": "Basic settings",
-                "label": "Allow embedding only in following domain",
+                "label": "Restrict embedding only to the following <br>web address:",
                 "placeholder": "Allowed domain",
-                "tooltip": "Type a website URL-address without prefixes or a subpage address. For example: homepage.com."
+                "tooltip": "Type a website URL-address without prefixes or a subpage address. For example: homepage.com.",
+                "inputWarning": "Verify typed web address"
             },
             "name": {
                 "label": "Map name (required)",
@@ -80,6 +82,8 @@ Oskari.registerLocalization(
                 "MapLegend": "Show map legend",
                 "MapRotator": "Enable map rotation",
                 "CrosshairTool": "Show map focal point",
+                "CameraControls3d": "Camera tools",
+                "TimeControl3d": "Time control",
                 "toolbarToolNames": {
                     "history": "Move to previous or next view",
                     "history_back": "Move to previous view",
@@ -105,6 +109,17 @@ Oskari.registerLocalization(
                     "info": "Select the background map layer. You can select the default background map layer in the map preview.",
                     "selectAsBaselayer": "Select as baselayer",
                     "allowStyleChange": "Allow style change"
+                },
+                "mylocation": {
+                    "modes": {
+                        "single": "Single",
+                        "continuous": "Continuous"
+                    },
+                    "titles": {
+                        "mode": "Mode",
+                        "mobileOnly": "Enable functionality only for mobile devices",
+                        "centerMapAutomatically": "Center map on user location at startup"
+                    }
                 }
             },
             "toollayout": {

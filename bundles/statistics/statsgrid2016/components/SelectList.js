@@ -71,25 +71,30 @@ export class SelectList extends FormComponent {
                     // Drowpdown's bottom is visible
                     return;
                 }
+                if (this.options.allowOverflow) {
+                    container.css('overflow', 'visible');
+                    return;
+                }
                 // Open up
                 dropdown.addClass('up');
-                if (dropdown.offset().top > containerTop + topMargin) {
+                const topOverflow = containerTop + topMargin - dropdown.offset().top;
+                if (topOverflow < 0) {
                     // Drowpdown's top is visible
                     return;
                 }
-                // Open starting from the top of the container
-                dropdown.removeClass('up');
-                dropdown.css('bottom', '');
-                dropdown.css('top', '0');
-                const top = containerTop - dropdown.offset().top + topMargin;
-                dropdown.css('top', top + 'px');
+                // Make dropdowns top visible by reducing option list height
+                const optsEl = dropdown.find('.options');
+                optsEl.css('max-height', optsEl.height() - topOverflow);
             });
             selected.on('sumo:closed', () => {
                 // reset previous settings
                 const dropdown = this._element.find('div.optWrapper');
+                if (this.options.allowOverflow) {
+                    dropdown.parents('div.oskari-flyoutcontentcontainer').css('overflow', '');
+                    return; // no need to modify css
+                }
                 dropdown.removeClass('up');
-                dropdown.css('top', '');
-                dropdown.css('bottom', '');
+                dropdown.find('.options').css('max-height', '');
             });
         }
     }
@@ -161,6 +166,9 @@ export class SelectList extends FormComponent {
         if (options.multi) {
             select.prop('multiple', true);
         }
+        if (options.disabled) {
+            select.prop('disabled', true);
+        }
         // Initialize SumoSelect
         select.SumoSelect(options);
         // Sumo selects the first value by default. Reset to placeholder.
@@ -198,16 +206,19 @@ export class SelectList extends FormComponent {
      * @method selectFirstValue Select the first non-placeholder value
      */
     selectFirstValue () {
-        this._getSumoInstance().selectItem(0);
+        const val = this._element.find('option:enabled').first().val();
+        if (val) {
+            this.setValue(val);
+        }
     }
 
     /**
      * @method selectLastValue Select the last value
      */
     selectLastValue () {
-        const lastIndex = this._element.find('select').find('option:last-child').prop('index');
-        if (lastIndex || lastIndex === 0) {
-            this._getSumoInstance().selectItem(lastIndex);
+        const val = this._element.find('option:enabled').last().val();
+        if (val) {
+            this.setValue(val);
         }
     }
 

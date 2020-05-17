@@ -11,6 +11,7 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.SeriesControlPlugin',
         me._instance = instance;
         me._clazz = 'Oskari.statistics.statsgrid.SeriesControlPlugin';
         me._defaultLocation = 'center top';
+        me._fixedLocation = true;
         me._index = 5;
 
         me._name = 'SeriesControlPlugin';
@@ -31,6 +32,12 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.SeriesControlPlugin',
         toggleUI: function () {
             this.element ? this.teardownUI() : this._buildUI();
             return !!this.element;
+        },
+        hasUI: function () {
+            // Plugin has ui element but returns false, because
+            // otherwise publisher would stop this plugin and start it again when leaving the publisher,
+            // instance updates visibility
+            return false;
         },
         teardownUI: function () {
             this._isMobileVisible = false;

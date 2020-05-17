@@ -36,7 +36,8 @@ export class AbstractLayerHandler {
     createEventHandlers () {
         return {
             AfterChangeMapLayerStyleEvent: event => this._updateLayerStyle(event.getMapLayer()),
-            AfterChangeMapLayerOpacityEvent: event => this._updateLayerOpacity(event.getMapLayer())
+            AfterChangeMapLayerOpacityEvent: event => this._updateLayerOpacity(event.getMapLayer()),
+            MapLayerVisibilityChangedEvent: event => this._updateLayerStyle(event.getMapLayer())
         };
     }
     /**
@@ -83,8 +84,8 @@ export class AbstractLayerHandler {
         const { left, bottom, right, top } = this.plugin.getSandbox().getMap().getBbox();
         const propsList = this._getFeaturePropsInExtent(source, [left, bottom, right, top]);
         const fields = getFieldsArray(propsList);
-        // Update fields and locales only if fields is not empty and it has changed
-        if (fields && layer.getFields().length < fields.length) {
+        // Update fields and locales only if fields is empty
+        if (!layer.getFields().length) {
             this.plugin.setWFSProperties(layer, fields);
             return;
         }
