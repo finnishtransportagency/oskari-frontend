@@ -3,6 +3,17 @@ import olLayerVector from 'ol/layer/Vector';
 import olFeature from 'ol/Feature';
 import * as olGeom from 'ol/geom';
 
+import '../../request/AddMarkerRequest';
+import '../../request/AddMarkerRequestHandler';
+import '../../request/RemoveMarkersRequest';
+import '../../request/RemoveMarkersRequestHandler';
+import '../../request/MarkerVisibilityRequest';
+import '../../request/MarkerVisibilityRequestHandler';
+
+import '../../event/AfterAddMarkerEvent';
+import '../../event/MarkerClickEvent';
+import '../../event/AfterRemoveMarkersEvent';
+
 /**
  * @class Oskari.mapframework.mapmodule.MarkersPlugin
  * Provides marker functionality for the map.
@@ -300,9 +311,8 @@ Oskari.clazz.define('Oskari.mapframework.mapmodule.MarkersPlugin',
                     delete me._unVisibleMarkers;
                     me._unVisibleMarkers = {};
                 }
-            }
-            // remove single marker
-            else {
+            } else {
+                // remove single marker
                 var marker = me._markerFeatures[optionalMarkerId];
                 if (!marker) {
                     sandbox.printWarn('Tried to remove non-existing marker with id: ' + optionalMarkerId);
@@ -436,9 +446,10 @@ Oskari.clazz.define('Oskari.mapframework.mapmodule.MarkersPlugin',
                 this.getSandbox().printWarn('Undefined coordinate in', markerData);
                 return null;
             }
-
+            // Remove null values to get defaults
+            Object.keys(markerData).forEach(key => markerData[key] === null && delete markerData[key]);
             // Combine default values with given values
-            var data = jQuery.extend(true, _.cloneDeep(this._defaultData), markerData);
+            var data = jQuery.extend(true, {}, this._defaultData, markerData);
 
             // generate id if not provided
             data.id = id;
@@ -571,7 +582,7 @@ Oskari.clazz.define('Oskari.mapframework.mapmodule.MarkersPlugin',
             var key;
             if (!visible && markerId) { // Check hiding for wanted marker
                 if (this._markers[markerId]) {
-                    this._unVisibleMarkers[markerId] = _.cloneDeep(this._markers[markerId]);
+                    this._unVisibleMarkers[markerId] = { ...this._markers[markerId] };
                     // remove if found
                     // event is suppressed as this is "modify"
                     this.removeMarkers(true, markerId, true);
@@ -579,7 +590,7 @@ Oskari.clazz.define('Oskari.mapframework.mapmodule.MarkersPlugin',
                 }
             } else if (!visible) { // Check hiding for all markers
                 for (key in this._markers) {
-                    this._unVisibleMarkers[key] = _.cloneDeep(this._markers[key]);
+                    this._unVisibleMarkers[key] = { ...this._markers[key] };
                     // remove if found
                     // event is suppressed as this is "modify"
                     this.removeMarkers(true, key, true);
@@ -587,7 +598,7 @@ Oskari.clazz.define('Oskari.mapframework.mapmodule.MarkersPlugin',
                 }
             } else if (markerId) { // Check showing for wanted marker
                 if (this._unVisibleMarkers[markerId]) {
-                    this._markers[markerId] = _.cloneDeep(this._unVisibleMarkers[markerId]);
+                    this._markers[markerId] = { ...this._unVisibleMarkers[markerId] };
                     // remove if found
                     // event is suppressed as this is "modify"
                     this.addMapMarker(this._markers[markerId], markerId, true);
@@ -595,7 +606,7 @@ Oskari.clazz.define('Oskari.mapframework.mapmodule.MarkersPlugin',
                 }
             } else { // Check showing for all markers
                 for (key in this._unVisibleMarkers) {
-                    this._markers[key] = _.cloneDeep(this._unVisibleMarkers[key]);
+                    this._markers[key] = { ...this._unVisibleMarkers[key] };
                     // remove if found
                     // event is suppressed as this is "modify"
                     this.addMapMarker(this._markers[key], key, true);
@@ -609,11 +620,8 @@ Oskari.clazz.define('Oskari.mapframework.mapmodule.MarkersPlugin',
          * @param marker
          * @returns {*}
          */
-        constructImage: function (marker) {
-            var me = this;
-            var iconSrc = me.getDefaultIconUrl();
-
-            return iconSrc;
+        constructImage: function () {
+            return this.getDefaultIconUrl();
         },
 
         /**
@@ -736,15 +744,35 @@ Oskari.clazz.define('Oskari.mapframework.mapmodule.MarkersPlugin',
          * @return {String} link parameters
          */
         getStateParameters: function () {
-            var state = this.getState();
-            if (!state || !state.markers) {
-                return '';
+            const { markers } = this.getState();
+            return this.getMarkersString(markers);
+        },
+        getTransformedStateParameters: function (targetSrs) {
+            const mapmodule = this.getMapModule();
+            const currentSrs = mapmodule.getProjection();
+            if (!targetSrs || targetSrs === currentSrs) {
+                return this.getStateParameters();
             }
-
-            var FIELD_SEPARATOR = '|';
-            var MARKER_SEPARATOR = '___';
-            var markerParams = [];
-            _.each(state.markers, function (marker) {
+            const { markers } = this.getState();
+            let transformedMarkers;
+            try {
+                transformedMarkers = markers.map(marker => {
+                    const lonlat = mapmodule.transformCoordinates({ lon: marker.x, lat: marker.y }, currentSrs, targetSrs);
+                    return {
+                        ...marker,
+                        x: lonlat.lon,
+                        y: lonlat.lat
+                    };
+                });
+            } catch (err) {
+                transformedMarkers = [];
+            };
+            return this.getMarkersString(transformedMarkers);
+        },
+        getMarkersString: function (markers = []) {
+            const FIELD_SEPARATOR = '|';
+            const MARKER_SEPARATOR = '___';
+            const markerParams = markers.map(marker => {
                 var str = marker.shape + FIELD_SEPARATOR +
                     marker.size + FIELD_SEPARATOR;
                 if (marker.color.indexOf('#') === 0) {
@@ -752,10 +780,9 @@ Oskari.clazz.define('Oskari.mapframework.mapmodule.MarkersPlugin',
                 } else {
                     str = str + marker.color;
                 }
-                str = str + FIELD_SEPARATOR +
+                return str + FIELD_SEPARATOR +
                     marker.x + '_' + marker.y + FIELD_SEPARATOR +
                     encodeURIComponent(marker.msg);
-                markerParams.push(str);
             });
             if (markerParams.length > 0) {
                 return '&markers=' + markerParams.join(MARKER_SEPARATOR);
@@ -782,7 +809,7 @@ Oskari.clazz.define('Oskari.mapframework.mapmodule.MarkersPlugin',
                 me.state = {};
             }
             me.state.markers = [];
-            _.each(me._markers, function (marker) {
+            Object.values(this._markers).forEach(marker => {
                 if (!marker.transient) {
                     me.state.markers.push(marker);
                 }
@@ -817,11 +844,11 @@ Oskari.clazz.define('Oskari.mapframework.mapmodule.MarkersPlugin',
         }
 
     }, {
-        'extend': ['Oskari.mapping.mapmodule.plugin.AbstractMapModulePlugin'],
+        extend: ['Oskari.mapping.mapmodule.plugin.AbstractMapModulePlugin'],
         /**
          * @static @property {string[]} protocol array of superclasses
          */
-        'protocol': [
+        protocol: [
             'Oskari.mapframework.module.Module',
             'Oskari.mapframework.ui.module.common.mapmodule.Plugin'
         ]

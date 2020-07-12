@@ -18,6 +18,9 @@ import isValidOp from 'jsts/org/locationtech/jts/operation/valid/IsValidOp';
 const olParser = new jstsOL3Parser();
 olParser.inject(olGeom.Point, olGeom.LineString, LinearRing, olGeom.Polygon, olGeom.MultiPoint, olGeom.MultiLineString, olGeom.MultiPolygon, GeometryCollection);
 
+const arrayValuesEqual = (array1, array2) => array1.length === array2.length && array1.every((value, index) => value === array2[index]);
+const firstAndLastCoordinatesEqual = (coordinates) => coordinates.length > 1 && arrayValuesEqual(coordinates[0], coordinates[coordinates.length - 1]);
+const hasEnoughCoordinatesForArea = (coordinates) => coordinates.length > 3;
 /**
  * @class Oskari.mapping.drawtools.plugin.DrawPlugin
  * Map engine specific implementation for draw tools
@@ -952,7 +955,7 @@ Oskari.clazz.define(
             // That is because the first and the last point of the geometry are being modified at the same time
             // The points should have identical values but in the first call they don't
             // So the first call is ignored by the if statement below since it would otherwise throw an error from a 3rd party library
-            if (coordinates.length >= 4 && _.isEqual(coordinates[0], coordinates[coordinates.length - 1])) {
+            if (hasEnoughCoordinatesForArea(coordinates) && firstAndLastCoordinatesEqual(coordinates)) {
                 if (!isValidOp.isValid(olParser.read(geometry))) {
                     // lines intersect -> problem!!
                     currentDrawing.setStyle(me._styles.intersect);
@@ -975,65 +978,51 @@ Oskari.clazz.define(
          * - displays measurement result on feature
          * @param {ol/MapBrowserEvent} evt
          */
-        pointerMoveHandler: function (evt) {
-            var me = this;
-            evt = evt || {};
-            var tooltipCoord = evt.coordinate;
-            if (me._sketch) {
-                var output,
-                    area,
-                    length,
-                    overlay;
-                var geom = (me._sketch.getGeometry());
-                var mapmodule = this.getMapModule();
-                if (geom instanceof olGeom.Polygon) {
-                    area = mapmodule.getGeomArea(geom);
-                    if (area < 10000) {
-                        area = area.toFixed(0) + ' m&sup2;';
-                    } else if (area > 1000000) {
-                        area = (area / 1000000).toFixed(3) + ' km&sup2;';
-                    } else {
-                        area = (area / 10000).toFixed(2) + ' ha';
-                    }
-                    if (area) {
-                        area = area.replace('.', ',');
-                    }
-                    output = area;
-                    tooltipCoord = geom.getInteriorPoint().getCoordinates();
-                    // for Polygon-drawing checking itself-intersection
-                    if (me._featuresValidity[me._sketch.getId()] === false) {
-                        output = '';
-                        if (me._showIntersectionWarning) {
-                            output = me._loc.intersectionNotAllowed;
-                        }
-                    }
-                } else if (geom instanceof olGeom.LineString) {
-                    length = mapmodule.getGeomLength(geom);
-                    if (length < 1000) {
-                        length = length.toFixed(0) + ' m';
-                    } else {
-                        length = (length / 1000).toFixed(3) + ' km';
-                    }
-                    if (length) {
-                        length = length.replace('.', ',');
-                    }
-                    output = length;
-                    tooltipCoord = geom.getLastCoordinate();
-                }
-                if (me.getOpts('showMeasureOnMap') && tooltipCoord) {
-                    overlay = me._overlays[me._sketch.getId()];
-                    if (overlay) {
-                        var ii = jQuery('div.' + me._tooltipClassForMeasure + '.' + me._sketch.getId());
-                        ii.html(output);
-                        if (output === '') {
-                            ii.addClass('withoutText');
-                        } else {
-                            ii.removeClass('withoutText');
-                        }
-                        overlay.setPosition(tooltipCoord);
-                    }
-                }
+        pointerMoveHandler: function (evt = {}) {
+            const me = this;
+            let tooltipCoord = evt.coordinate;
+            if (!me._sketch || !me.getOpts('showMeasureOnMap')) {
+                // if no drawing of we don't want to show it on map -> skip
+                return;
             }
+            const geom = (me._sketch.getGeometry());
+            const mapmodule = this.getMapModule();
+            let output;
+            if (geom instanceof olGeom.Polygon) {
+                tooltipCoord = geom.getInteriorPoint().getCoordinates();
+                // for Polygon-drawing checking itself-intersection
+                if (me._featuresValidity[me._sketch.getId()] === false) {
+                    output = '';
+                    if (me._showIntersectionWarning) {
+                        output = me._loc.intersectionNotAllowed;
+                    }
+                } else {
+                    // all good - get actual measurement
+                    const area = mapmodule.getGeomArea(geom);
+                    output = mapmodule.formatMeasurementResult(area, 'area');
+                }
+            } else if (geom instanceof olGeom.LineString) {
+                const length = mapmodule.getGeomLength(geom);
+                output = mapmodule.formatMeasurementResult(length, 'line');
+                tooltipCoord = geom.getLastCoordinate();
+            }
+            if (!tooltipCoord) {
+                // we don't know where we should show this
+                return;
+            }
+            const overlay = me._overlays[me._sketch.getId()];
+            if (!overlay) {
+                // no overlay to update
+                return;
+            }
+            var ii = jQuery('div.' + me._tooltipClassForMeasure + '.' + me._sketch.getId());
+            ii.html(output);
+            if (output === '') {
+                ii.addClass('withoutText');
+            } else {
+                ii.removeClass('withoutText');
+            }
+            overlay.setPosition(tooltipCoord);
         },
         /**
          * @method addModifyInteraction
@@ -1311,7 +1300,7 @@ Oskari.clazz.define(
             tooltipElement.className = tooltipClass + ' ' + id;
             var tooltip = new olOverlay({
                 element: tooltipElement,
-                offset: [ 0, -5 ],
+                offset: [0, -5],
                 positioning: 'bottom-center',
                 id: id
             });

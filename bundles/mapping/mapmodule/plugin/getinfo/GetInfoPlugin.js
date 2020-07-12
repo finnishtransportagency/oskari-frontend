@@ -1,3 +1,4 @@
+import '../BasicMapModulePlugin';
 /**
  * @class Oskari.mapframework.mapmodule.GetInfoPlugin
  *
@@ -31,7 +32,7 @@ Oskari.clazz.define(
             jqhr: null,
             timestamp: null
         };
-        me.clickLocation = null;
+        me._location = null;
 
         /* templates */
         me.template = {};
@@ -68,13 +69,18 @@ Oskari.clazz.define(
             this._config.ignoredLayerTypes = Array.from(ignoredLayerTypes);
         },
 
-        _destroyControlElement: function () {
-            // Slight misuse of the function, but I don't want to override
-            // _stopPluginImpl.
-
+        _stopPluginImpl: function () {
             // hide infobox if open
             this._closeGfiInfo();
-            this.clickLocation = null;
+        },
+        setLocation: function (lonlat) {
+            this._location = lonlat;
+        },
+        getLocation: function () {
+            return this._location;
+        },
+        resetLocation: function () {
+            this._location = null;
         },
 
         _createEventHandlers: function () {
@@ -87,17 +93,13 @@ Oskari.clazz.define(
                         // disabled, do nothing
                         return;
                     }
-
+                    const click = evt.getLonLat();
+                    const lonlat = this.getLocation();
                     // remove old popup
-                    this._closeGfiInfo();
-
-                    this.clickLocation = {
-                        lonlat: evt.getLonLat()
-                    };
-                    this.handleGetInfo(this.clickLocation.lonlat);
-                },
-                AfterMapMoveEvent: function (evt) {
-                    this._cancelAjaxRequest();
+                    if (!lonlat || lonlat.lon !== click.lon || lonlat.lat !== click.lat) {
+                        this._closeGfiInfo();
+                    }
+                    this.handleGetInfo(click);
                 },
                 AfterMapLayerRemoveEvent: function (evt) {
                     this._refreshGfiInfo('remove', evt.getMapLayer().getId());
@@ -190,14 +192,9 @@ Oskari.clazz.define(
         _buildLayerIdList: function (layers) {
             var me = this;
             var selected = layers || me.getSandbox().findAllSelectedMapLayers();
-            var layerIds = _.chain(selected)
-                .filter(function (layer) {
-                    return me._isQualified(layer);
-                })
-                .map(function (layer) {
-                    return layer.getId();
-                })
-                .value()
+            var layerIds = selected
+                .filter(layer => me._isQualified(layer))
+                .map(layer => layer.getId())
                 .join(',');
 
             return layerIds || null;
@@ -311,7 +308,8 @@ Oskari.clazz.define(
                 },
                 success: function (resp) {
                     if (me._isAjaxRequestBusy()) {
-                        _.each(resp.data, function (datum) {
+                        const data = resp.data || [];
+                        data.forEach((datum) => {
                             me._handleInfoResult({
                                 features: [datum],
                                 lonlat: lonlat,
@@ -364,11 +362,9 @@ Oskari.clazz.define(
          * @param  {Object} data
          */
         _handleInfoResult: function (data) {
-            var content = [],
-                contentData = {},
-                fragments = [],
-                colourScheme,
-                font;
+            var content = [];
+            var contentData = {};
+            var fragments = [];
 
             if (data.via === 'ajax') {
                 fragments = this._parseGfiResponse(data);
@@ -381,11 +377,7 @@ Oskari.clazz.define(
                 contentData.layerId = fragments[0].layerId;
                 content.push(contentData);
             }
-
-            if (_.isObject(this._config)) {
-                colourScheme = this._config.colourScheme;
-                font = this._config.font;
-            }
+            var { colourScheme, font } = this._config || {};
 
             this._showGfiInfo(content, data, this.formatters, {
                 colourScheme: colourScheme,
@@ -407,8 +399,8 @@ Oskari.clazz.define(
                 var reqBuilder = Oskari.requestBuilder('InfoBox.HideInfoBoxRequest');
                 this.getSandbox().request(this, reqBuilder(this.infoboxId));
             }
+            this.resetLocation();
         },
-
         /**
          * Shows given content in given location using infobox bundle
          *
@@ -426,7 +418,6 @@ Oskari.clazz.define(
                 colourScheme: params.colourScheme,
                 font: params.font
             };
-
             if (reqBuilder) {
                 var request = reqBuilder(
                     params.infoboxId,
@@ -435,6 +426,7 @@ Oskari.clazz.define(
                     data.lonlat,
                     options
                 );
+                this.setLocation(data.lonlat);
                 this.getSandbox().request(this, request);
             }
         },
@@ -451,7 +443,7 @@ Oskari.clazz.define(
             var reqB,
                 req;
 
-            if (this.clickLocation) {
+            if (this.getLocation()) {
                 reqB = Oskari.requestBuilder(
                     'InfoBox.RefreshInfoBoxRequest'
                 );
@@ -473,15 +465,13 @@ Oskari.clazz.define(
          */
         _handleInfoBoxEvent: function (evt) {
             var sandbox = this.getSandbox(),
-                clickLoc = this.clickLocation,
+                lonlat = this.getLocation(),
                 contentId = evt.getContentId(),
                 contentLayer,
                 clickEventB,
                 clickEvent;
-
             if (evt.getId() === this.infoboxId &&
-                evt.isOpen() &&
-                _.isObject(clickLoc)) {
+                evt.isOpen() && lonlat) {
                 if (contentId) {
                     // If there's a specific layer id and it's selected
                     // we can directly get info for that
@@ -489,14 +479,14 @@ Oskari.clazz.define(
                         contentId
                     );
                     if (contentLayer) {
-                        this.handleGetInfo(clickLoc.lonlat, [contentLayer]);
+                        this.handleGetInfo(lonlat, [contentLayer]);
                     }
                 } else {
                     // Otherwise, we need to actually send `MapClickedEvent`
                     // and not just call `handleGetInfo` since then
                     // we'd only get the WMS feature info.
                     clickEventB = Oskari.eventBuilder('MapClickedEvent');
-                    clickEvent = clickEventB(clickLoc.lonlat);
+                    clickEvent = clickEventB(lonlat);
                     // Timeout needed since the layer plugins haven't
                     // necessarily done their job of adding the layer yet.
                     setTimeout(function () {

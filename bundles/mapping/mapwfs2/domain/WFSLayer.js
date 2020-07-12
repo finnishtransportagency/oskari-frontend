@@ -65,6 +65,31 @@ export class WFSLayer extends VectorTileLayer {
     }
 
     /**
+     * Returns an formatter object for given field name.
+     * The object can have type and params like:
+     * {
+     *   type: "link",
+     *   params: {
+     *     label: "Link title"
+     *   }
+     * }
+     * But it can be an empty config if nothing is configured.
+     * This is used to instruct GFI value formatting
+     * @param {String} field feature property name that might have formatter options configured
+     */
+    getFieldFormatMetadata (field) {
+        if (typeof field !== 'string') {
+            return {};
+        }
+        const { data = {} } = this.getAttributes();
+        const { format } = data;
+        if (typeof format !== 'object') {
+            return {};
+        }
+        return format[field] || {};
+    }
+
+    /**
      * @method getActiveFeatures
      * @return {Object[]} features
      */
@@ -244,7 +269,7 @@ export class WFSLayer extends VectorTileLayer {
             const styles = this._userStyles.map(s => {
                 const style = Oskari.clazz.create('Oskari.mapframework.domain.Style');
                 style.setName(s.name);
-                style.setTitle(s.name);
+                style.setTitle(s.title);
                 style.setLegend('');
                 return style;
             });
@@ -314,6 +339,7 @@ export class WFSLayer extends VectorTileLayer {
     getWMSLayerId () {
         return this._WMSLayerId;
     }
+
     /**
      * @method getLayerUrl
      * Superclass override
@@ -330,7 +356,7 @@ export class WFSLayer extends VectorTileLayer {
         if (!styleWithMetadata) {
             return;
         }
-        const index = this._userStyles.findIndex(s => s.style.id === styleWithMetadata.style.id);
+        const index = this._userStyles.findIndex(s => s.name === styleWithMetadata.name);
         if (index !== -1) {
             this._userStyles[index] = styleWithMetadata;
         } else {
@@ -340,15 +366,15 @@ export class WFSLayer extends VectorTileLayer {
         this.sandbox.postRequestByName('ChangeMapLayerStyleRequest', [this.getId(), styleWithMetadata.name]);
     }
 
-    removeStyle (styleId) {
-        const index = this._userStyles.findIndex(s => s.style.id === styleId);
+    removeStyle (name) {
+        const index = this._userStyles.findIndex(s => s.name === name);
         if (index !== -1) {
             this._userStyles.splice(index, 1);
         }
 
         // Remove style from layer if active.
         const customStyleWrapper = this.getCustomStyle();
-        if (customStyleWrapper && customStyleWrapper.style.id === styleId) {
+        if (customStyleWrapper && customStyleWrapper.name === name) {
             this.sandbox.postRequestByName('ChangeMapLayerStyleRequest', [this.getId(), 'default']);
         } else {
             // Only notify to update list of styles in selected layers.
