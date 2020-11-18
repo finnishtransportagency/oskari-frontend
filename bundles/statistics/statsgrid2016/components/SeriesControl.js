@@ -110,12 +110,15 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.SeriesControl', function (sandb
         // quick ui response
         var delta = forward ? 1 : -1;
         var requestedIndex = this._uiState.currentSeriesIndex + delta;
-        if (requestedIndex >= 0 && requestedIndex < this._uiState.values.length) {
+        if (this._isValidIndex(requestedIndex)) {
             this._renderHandle(requestedIndex);
             this._updateValueDisplay(requestedIndex);
         }
 
         forward ? this.seriesService.next() : this.seriesService.previous();
+    },
+    _isValidIndex: function (index) {
+        return index >= 0 && index < this._uiState.values.length;
     },
     render: function (el) {
         this._element = jQuery(this.__templates.main());
@@ -123,8 +126,8 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.SeriesControl', function (sandb
         if (Oskari.util.isMobile()) {
             this.setWidth(this._minWidth);
         }
-        this._updateLineSegments();
         el.append(this._element);
+        this._updateValues();
     },
     /**
      * @method _setAnimationState Set animating / not animating state
@@ -263,31 +266,32 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.SeriesControl', function (sandb
         var value = this._uiState.values[index];
         display.text(value);
     },
+    _updateValues: function (indicator) {
+        const active = indicator || this.service.getStateService().getActiveIndicator();
+        if (active && active.series) {
+            this.seriesService.setValues(active.series.values);
+            this._updateLineSegments();
+            this._updateSeriesIndex(this.seriesService.getSelectedIndex());
+            if (this.seriesService.isAnimating()) {
+                this.seriesService.setAnimating(false);
+                this._setAnimationState(false);
+            }
+        }
+    },
+    _updateSelection: function () {
+        this._setAnimationState(this.seriesService.isAnimating());
+        const index = this.seriesService.getSelectedIndex();
+        if (this._isValidIndex(index)) {
+            this._updateSeriesIndex(index);
+        }
+    },
     /**
      * Listen to events that require re-rendering the UI
      */
     _bindToEvents: function () {
-        var me = this;
-        me.service.on('StatsGrid.ActiveIndicatorChangedEvent', function (event) {
-            me._setAnimationState(me.seriesService.isAnimating());
-            if (event.current) {
-                var values = event.current.series && event.current.series.values;
-                if (values) {
-                    var seriesChanged = '' + values !== '' + me._uiState.values;
-                    if (seriesChanged) {
-                        // series changed, update service
-                        me.seriesService.setValues(values || []);
-                        me._updateLineSegments();
-                        me._updateSeriesIndex(me.seriesService.getSelectedIndex());
-                        if (me.seriesService.isAnimating()) {
-                            me.seriesService.setAnimating(false);
-                            me._setAnimationState(false);
-                        }
-                    } else {
-                        me._updateSeriesIndex(me.seriesService.getSelectedIndex());
-                    }
-                }
-            }
-        });
+        this.service.on('StatsGrid.ActiveIndicatorChangedEvent', event =>
+            this._updateValues(event.getCurrent()));
+        this.service.on('StatsGrid.ParameterChangedEvent', () =>
+            this._updateSelection());
     }
 });

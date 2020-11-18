@@ -73,10 +73,8 @@ Oskari.registerLocalization(
             "noResults": "Данные не выбраны",
             "noValues": "Нет значений для выбранных данных",
             "areaSelection": {
-                "title": "АРЕАЛ ОБИТАНИЯ",
-                "info": "Пересмотреть ареал обитания для данных из выпадающего списка"
+                "title": "АРЕАЛ ОБИТАНИЯ"
             },
-            "source": "Данные",
             "orderBy": "Сортировать",
             "orderByAscending": "Сортировать по возрастанию",
             "orderByDescending": "Сортировать по убыванию",
@@ -143,7 +141,8 @@ Oskari.registerLocalization(
                 "max": "Максимум",
                 "color": "Цвет",
                 "transparency": "Прозрачность",
-                "showValues": "Показать значения"
+                "showValues": "Показать значения",
+                'fractionDigits': 'Количество десятичных знаков'
             }
         },
         "colorset": {
@@ -267,6 +266,14 @@ Oskari.registerLocalization(
                 "edit": "Редактировать",
                 "remove": "Удалить"
             }
+        },
+        'indicatorList': {
+            'title': 'Индикаторы',
+            'removeAll': 'Remove all',
+            'emptyMsg': 'Отсутствуют выбранные индикаторы'
+        },
+        'sumo': {
+            'locale': ['ОК', 'Отменить', 'Выбрать все']
         }
     }
 });

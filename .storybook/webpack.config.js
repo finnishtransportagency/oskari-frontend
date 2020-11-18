@@ -1,4 +1,4 @@
-const resolveConfig = require('../webpack/resolveConfig.js');
+const OskariConfig = require('../webpack/config.js');
 
 // Export a function. Accept the base config as the only param.
 module.exports = async ({ config, mode }) => {
@@ -7,20 +7,12 @@ module.exports = async ({ config, mode }) => {
     // 'PRODUCTION' is used when building the static version of storybook.
 
     // Make whatever fine-grained changes you need
-    config.module.rules.push({
-    test: /\.less$/,
-    use: [
-        'style-loader', 
-        'css-loader',
-        {
-            loader: 'less-loader',
-            options: {
-                javascriptEnabled: true
-            }
-        }]
-    });
+    OskariConfig.getStyleFileRules().forEach(rule => config.module.rules.push(rule));
+    config.resolve = OskariConfig.RESOLVE;
 
-    config.resolve = resolveConfig;
+    const babelLoader = OskariConfig.BABEL_LOADER_RULE;
+    babelLoader.exclude.push(/node_modules/);
+    config.module.rules.push(babelLoader);
 
     // Return the altered config
     return config;

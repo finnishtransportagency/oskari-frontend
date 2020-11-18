@@ -11,7 +11,8 @@ Oskari.registerLocalization(
         },
         "published": {
             "title": "Upotettu kartta on valmis",
-            "desc": "Kartta on valmis. Julkaise kartta verkkosivulla liittämällä alla oleva html-koodi verkkosivun koodiin:"
+            "desc": "Kartta on valmis. Julkaise kartta verkkosivulla liittämällä alla oleva html-koodi verkkosivun koodiin:",
+            "copy": "Kopioi leikepöydälle"
         },
         "edit": {
             "popup": {
@@ -36,9 +37,10 @@ Oskari.registerLocalization(
             },
             "domain": {
                 "title": "Julkaisutiedot",
-                "label": "Salli kartan upotus vain seuraavaan sivustoon",
+                "label": "Rajoita kartan upotus vain seuraavaan <br>verkko-osoitteeseen:",
                 "placeholder": "Sivuston osoite",
-                "tooltip": "Anna verkkosivuston osoite eli domain-nimi ilman http- tai www-etuliitettä tai alasivun osoitetta. Esimerkiksi: omakotisivu.com."
+                "tooltip": "Anna verkkosivuston osoite eli domain-nimi ilman http- tai www-etuliitettä tai alasivun osoitetta. Esimerkiksi: omakotisivu.com.",
+                "inputWarning": "Tarkista syötetty verkko-osoite"
             },
             "name": {
                 "label": "Kartan nimi (pakollinen tieto)",
@@ -57,7 +59,7 @@ Oskari.registerLocalization(
             },
             "size": {
                 "label": "Kartan koko",
-                "tooltip": "Valitse kartan koko. Leveyden on oltava vähintään 30 pikseliä ja korkeuden vähintään 20 pikseliä. Erota desimaalit pilkulla. Näet muutokset esikatselukartassa."
+                "tooltip": "Valitse kartan koko. Suositus on käyttää skaalautuvaa vaihtoehtoa \"Skaalautuva / tilan täyttävä\". Muussa tapauksessa leveyden on oltava välillä {minWidth} ja {maxWidth} pikseliä ja korkeuden {minHeight} ja {maxHeight} pikseliä."
             },
             "maptools": {
                 "label": "Kartalla näytettävät työkalut",
@@ -80,6 +82,8 @@ Oskari.registerLocalization(
                 "MapLegend": "Näytä karttaselitteet",
                 "MapRotator": "Salli kartan pyörittäminen",
                 "CrosshairTool": "Näytä kartan keskipiste",
+                "CameraControls3d": "Kameratyökalut",
+                "TimeControl3d": "Ajanhetken säädin",
                 "toolbarToolNames": {
                     "history": "Siirtyminen edelliseen ja seuraavaan näkymään",
                     "history_back": "Siirtyminen edelliseen näkymään",
@@ -105,6 +109,17 @@ Oskari.registerLocalization(
                     "info": "Valitse taustakarttoina näytettävät karttatasot. Oletusvalinnan voit tehdä esikatselukartassa.",
                     "selectAsBaselayer": "Taustakarttataso",
                     "allowStyleChange": "Salli esitystyylin valinta"
+                },
+                "mylocation": {
+                    "modes": {
+                        "single": "Yksittäinen",
+                        "continuous": "Jatkuva"
+                    },
+                    "titles": {
+                        "mode": "Toiminto",
+                        "mobileOnly": "Käytä toimintoja vain mobiililaitteissa",
+                        "centerMapAutomatically": "Keskitä käyttäjän sijaintiin automaattisesti kartan käynnistyessä"
+                    }
                 }
             },
             "toollayout": {
@@ -194,7 +209,7 @@ Oskari.registerLocalization(
             "confirm": {
                 "replace": {
                     "title": "Haluatko päivittää upotetun kartan?",
-                    "msg": "Päivitykset näkyvät välittömästi upotetussa kartassa. Sinun ei tarvitse muuttaa html-koodia."
+                    "msg": "Haluatko päivittää upotetun kartan? Päivitykset näkyvät välittömästi upotetussa kartassa. Sinun ei tarvitse muuttaa html-koodia paitsi jos olet muuttanut kartan kokoa."
                 }
             },
             "layerselection": {
@@ -209,7 +224,7 @@ Oskari.registerLocalization(
             "help": "Ohje",
             "error": {
                 "title": "Virhe",
-                "size": "Kartan koko on virheellinen. Leveyden on oltava vähintään 30 pikseliä ja korkeuden vähintään 20 pikseliä. Desimaalierottimena on piste.",
+                "size": "Kartan koko on virheellinen. Leveyden on oltava välillä {minWidth} ja {maxWidth} pikseliä ja korkeuden {minHeight} ja {maxHeight} pikseliä.",
                 "domain": "Verkkosivuston osoite on pakollinen tieto. Anna sivuston osoite ja yritä uudelleen.",
                 "domainStart": "Verkkosivuston osoite on väärässä muodossa. Anna osoite ilman http- tai www-etuliitteitä ja yritä uudelleen.",
                 "name": "Kartan nimi on pakollinen tieto. Anna kartalle nimi ja yritä uudelleen.",

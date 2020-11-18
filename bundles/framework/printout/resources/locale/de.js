@@ -26,33 +26,15 @@ Oskari.registerLocalization(
             "size": {
                 "label": "Größe",
                 "tooltip": "Wählen Sie das Druck-Layout. Die Vorschau wird entsprechend aktualisiert.",
-                "options": [
-                    {
-                        "id": "A4",
-                        "label": "A4 Hochformat",
-                        "classForPreview": "Vorschau Hochformat",
-                        "selected": true
-                    },
-                    {
-                        "id": "A4_Querformat",
-                        "label": "A4 Querformat",
-                        "classForPreview": "Vorschau Querformat"
-                    },
-                    {
-                        "id": "A3",
-                        "label": "A3 Hochformat",
-                        "classForPreview": "Vorschau Hochformat"
-                    },
-                    {
-                        "id": "A3_Querformat",
-                        "label": "A3 Querformat",
-                        "classForPreview": "Vorschau Querformat"
-                    }
-                ]
+                "options": {
+                    "A4": "A4 Hochformat",
+                    "A4_Landscape": "A4 Querformat",
+                    "A3": "A3 Hochformat",
+                    "A3_Landscape": "A3 Querformat"
+                }
             },
             "preview": {
                 "label": "Vorschau",
-                "tooltip": "Klicken Sie auf die Vorschau, um eine vergrößerte Ansicht zu erhalten.",
                 "pending": "Die Vorschau wird in Kürze aktualisiert",
                 "notes": {
                     "extent": "Die Vorschau kann verwendet werden, um die Größe des Druckbereichs festzustellen."
@@ -76,45 +58,28 @@ Oskari.registerLocalization(
             "format": {
                 "label": "Dateiformat",
                 "tooltip": "Dateiformat auswählen",
-                "options": [
-                    {
-                        "id": "png",
-                        "format": "image/png",
-                        "label": "PNG-Bild"
-                    },
-                    {
-                        "id": "pdf",
-                        "format": "application/pdf",
-                        "selected": true,
-                        "label": "PDF-Dokument"
-                    }
-                ]
+                "options": {
+                    "png": "PNG-Bild",
+                    "pdf": "PDF-Dokument"
+                }
             },
             "mapTitle": {
                 "label": "Titel hinzufügen",
                 "tooltip": "Fügen Sie der Karte einen Titel hinzu"
             },
             "content": {
-                "options": [
-                    {
-                        "id": "pageLogo",
-                        "label": "Paikkatietoikkuna-Logo hinzufügen",
-                        "tooltip": "Sie können das Logo bei Bedarf verbergen",
-                        "checked": "checked"
-                    },
-                    {
-                        "id": "pageScale",
-                        "label": "Maßstab zur Karte hinzufügen",
-                        "tooltip": "Maßstab zur Karte hinzufügen",
-                        "checked": "checked"
-                    },
-                    {
-                        "id": "pageDate",
-                        "label": "Datum hinzufügen",
-                        "tooltip": "Sie können dem Ausdruck ein Datum hinzufügen",
-                        "checked": "checked"
-                    }
-                ]
+                "pageLogo": {
+                    "label": "Paikkatietoikkuna-Logo hinzufügen",
+                    "tooltip": "Sie können das Logo bei Bedarf verbergen"
+                },
+                "pageScale": {
+                    "label": "Maßstab zur Karte hinzufügen",
+                    "tooltip": "Maßstab zur Karte hinzufügen"
+                },
+                "pageDate": {
+                    "label": "Datum hinzufügen",
+                    "tooltip": "Sie können dem Ausdruck ein Datum hinzufügen"
+                }
             },
             "help": "Hilfe",
             "error": {

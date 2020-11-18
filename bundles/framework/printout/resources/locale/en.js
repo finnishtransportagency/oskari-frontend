@@ -26,33 +26,15 @@ Oskari.registerLocalization(
             "size": {
                 "label": "Size and direction",
                 "tooltip": "Select a print size and direction. You can see updates in the preview image.",
-                "options": [
-                    {
-                        "id": "A4",
-                        "label": "A4 portrait",
-                        "classForPreview": "preview-portrait",
-                        "selected": true
-                    },
-                    {
-                        "id": "A4_Landscape",
-                        "label": "A4 landscape",
-                        "classForPreview": "preview-landscape"
-                    },
-                    {
-                        "id": "A3",
-                        "label": "A3 portrait",
-                        "classForPreview": "preview-portrait"
-                    },
-                    {
-                        "id": "A3_Landscape",
-                        "label": "A3 landscape",
-                        "classForPreview": "preview-landscape"
-                    }
-                ]
+                "options": {
+                    "A4": "A4 portrait",
+                    "A4_Landscape": "A4 landscape",
+                    "A3": "A3 portrait",
+                    "A3_Landscape": "A3 landscape"
+                }
             },
             "preview": {
                 "label": "Preview",
-                "tooltip": "Click the preview image to open a larger image in another window.",
                 "pending": "The preview image will be updated shortly.",
                 "notes": {
                     "extent": "Check the map extent area in the preview image."
@@ -76,52 +58,35 @@ Oskari.registerLocalization(
             "format": {
                 "label": "File format",
                 "tooltip": "Select a file format for your print-out.",
-                "options": [
-                    {
-                        "id": "png",
-                        "format": "image/png",
-                        "label": "PNG image"
-                    },
-                    {
-                        "id": "pdf",
-                        "format": "application/pdf",
-                        "selected": true,
-                        "label": "PDF document"
-                    }
-                ]
-            },
-            "mapTitle": {
-                "label": "Map Title",
-                "tooltip": "Add a title for the map."
+                "options": {
+                    "png": "PNG image",
+                    "pdf": "PDF document"
+                }
             },
             "content": {
-                "options": [
-                    {
-                        "id": "pageLogo",
-                        "label": "Include logo",
-                        "tooltip": "You can hide the logo if necessary.",
-                        "checked": "checked"
-                    },
-                    {
-                        "id": "pageScale",
-                        "label": "Add a scale to the map printout",
-                        "tooltip": "Add a scale to the map, if you want.",
-                        "checked": "checked"
-                    },
-                    {
-                        "id": "pageDate",
-                        "label": "Include current date",
-                        "tooltip": "You can add a date to the printout.",
-                        "checked": "checked"
-                    },
-                    {
-                        "id": "pageTimeSeriesTime",
-                        "label": "Include time series timestamp",
-                        "tooltip": "You can add a time series timestamp to the printout.",
-                        "checked": "checked",
-                        "printLabel": "Time series time"
-                    }
-                ]
+                "label": "Additional content",
+                "tooltip": "",
+                "pngNote": "PNG-print will not include additional information.",
+                "mapTitle": {
+                    "placeholder": "Title"
+                },
+                "pageLogo": {
+                    "label": "Include logo",
+                    "tooltip": "You can hide the logo if necessary."
+                },
+                "pageScale": {
+                    "label": "Include scale bar",
+                    "tooltip": "Add a scale to the map, if you want."
+                },
+                "pageDate": {
+                    "label": "Include current date",
+                    "tooltip": "You can add a date to the printout."
+                },
+                "pageTimeSeriesTime": {
+                    "label": "Include time series timestamp",
+                    "tooltip": "You can add a time series timestamp to the printout.",
+                    "printLabel": "Time series time"
+                }
             },
             "help": "Help",
             "error": {
@@ -135,8 +100,8 @@ Oskari.registerLocalization(
             "scale": {
                 "label": "Scale",
                 "tooltip": "Specify the scale to be used for printing",
-                "mapScale": "Use the map scale",
-                "definedScale": "Select a scale",
+                "map": "Use the map scale",
+                "defined": "Select a scale",
                 "unsupportedLayersMessage": "The following maplayers are not shown on the printout",
                 "unsupportedLayersTitle": "The printout does not show all layers"
             }

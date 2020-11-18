@@ -144,6 +144,9 @@ Oskari.clazz.define("Oskari.statistics.statsgrid.StatsGridBundle",
                 "src": "../../../bundles/statistics/statsgrid2016/event/ParameterChangedEvent.js"
             }, {
                 "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/event/StateChangedEvent.js"
+            }, {
+                "type": "text/javascript",
                 "src": "../../../bundles/statistics/statsgrid2016/publisher/AbstractStatsPluginTool.js"
             }, {
                 "type": "text/javascript",
@@ -178,10 +181,6 @@ Oskari.clazz.define("Oskari.statistics.statsgrid.StatsGridBundle",
             }, {
                 "src": "../../../libraries/chosen/1.5.1/chosen.css",
                 "type": "text/css"
-            }, {
-                "type" : "text/javascript",
-                "expose": "GeostatsHelper",
-                "src" : "../../../libraries/geostats/GeostatsHelper.js"
             }],
             "locales": [{
                 "lang": "en",
@@ -203,6 +202,10 @@ Oskari.clazz.define("Oskari.statistics.statsgrid.StatsGridBundle",
                 "lang": "ru",
                 "type": "text/javascript",
                 "src": "../../../bundles/statistics/statsgrid2016/resources/locale/ru.js"
+            }, {
+                "lang": "is",
+                "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/resources/locale/is.js"
             }]
         },
         "bundle": {

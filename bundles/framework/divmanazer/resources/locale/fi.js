@@ -16,7 +16,9 @@ Oskari.registerLocalization(
             "exit": "Poistu",
             "ok": "OK",
             "save": "Tallenna",
-            "search": "Hae"
+            "search": "Hae",
+            "yes": "Kyllä",
+            "no": "Ei"
         },
         "LanguageSelect": {
             "title": "Kieli",
@@ -143,6 +145,10 @@ Oskari.registerLocalization(
             }
         },
         "VisualizationForm": {
+            "subheaders" : {
+                "name" : "Tyylin nimi",
+                "style" : "Esitystapa"
+            },
             "tooltips": {
                 "dot": "Muokkaa pisteen esitystapaa",
                 "area": "Muokkaa alueen esitystapaa",
@@ -278,7 +284,7 @@ Oskari.registerLocalization(
         },
         "FilterDialog": {
             "title": "Kohteiden suodatus",
-            "description": "Suodata kohteita tasolta:",
+            "description": "Valitse kohteita tasolta:",
             "cancelButton": "Peruuta",
             "clearButton": "Tyhjennä",
             "refreshButton": "Päivitä",

@@ -50,7 +50,7 @@ Oskari.clazz.define(
                 toolOwnStyle.setIconCls('show-own-style-tool');
                 toolOwnStyle.setTooltip(locOwnStyle);
                 toolOwnStyle.setCallback(function () {
-                    me.sandbox.postRequestByName('ShowOwnStyleRequest', [layer.getId()]);
+                    me.sandbox.postRequestByName('ShowOwnStyleRequest', [layer.getId(), undefined, false]);
                 });
                 layer.addTool(toolOwnStyle);
             }
@@ -108,23 +108,6 @@ Oskari.clazz.define(
             // WMS link layer id for wfs rendering option
             if (mapLayerJson.WMSLayerId) {
                 layer.setWMSLayerId(mapLayerJson.WMSLayerId);
-            }
-        },
-        /**
-         * To set default render mode on a layer
-         * @param {Oskari.mapframework.domain.WfsLayer} layer oskari layer
-         * @param {String} renderMode 'vector' or 'mvt'
-         */
-        setDefaultRenderMode (layer, renderMode) {
-            const mapModule = Oskari.getSandbox().findRegisteredModuleInstance('MainMapModule');
-            const plugin = mapModule.getLayerPlugins('wfs');
-            if (!plugin || !layer || !plugin.isRenderModeSupported || !plugin.isRenderModeSupported(renderMode)) {
-                return;
-            }
-            const options = layer.getOptions() || {};
-            if (!options.renderMode) {
-                options.renderMode = renderMode;
-                layer.setOptions(options);
             }
         }
     });

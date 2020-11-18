@@ -17,6 +17,7 @@ Oskari.clazz.define(
     function (sandbox, mapModule) {
         this.sandbox = sandbox;
         this.mapModule = mapModule;
+        this._log = Oskari.log('MapMoveRequestHandler');
     }, {
         /**
          * @method handleRequest
@@ -29,36 +30,31 @@ Oskari.clazz.define(
          *      request to handle
          */
         handleRequest: function (core, request) {
-            var zoom = request.getZoom();
-            var srsName = request.getSrsName();
-            var lonlat = {
-                lon: request.getCenterX(),
-                lat: request.getCenterY()
-            };
-
+            const requestZoom = request.getZoom();
+            const srsName = request.getSrsName();
+            const animation = request.getAnimation();
             // transform coordinates to given projection
-            lonlat = this.mapModule.transformCoordinates(lonlat, srsName);
-
-            var zoomChange = (zoom || zoom === 0);
-
-            // if zoom is about to change -> Suppress the event
-            this.mapModule.centerMap(lonlat, null, !!zoomChange);
-            if (zoomChange) {
-                const { left, top, bottom, right } = zoom;
-
-                if (left && top && bottom && right) {
-                    const zoomOut = top === bottom && left === right;
-                    this.mapModule.zoomToExtent(zoom, zoomOut, zoomOut);
-                    if (zoomOut) {
-                        this.mapModule.zoomToScale(2000);
-                    }
-                    return;
+            const lonlat = this.mapModule.transformCoordinates({ lon: request.getCenterX(), lat: request.getCenterY() }, srsName);
+            let zoom;
+            if (!this.mapModule.isValidLonLat(lonlat.lon, lonlat.lat)) {
+                if (this.mapModule.isValidBounds(requestZoom)) {
+                    this.mapModule.zoomToExtent(requestZoom);
+                } else {
+                    this._log.warn('Map move requested without valid location or bounds');
                 }
-                if (zoom.scale) {
-                    this.mapModule.zoomToScale(zoom.scale, false, false);
-                    return;
-                }
-                this.mapModule.setZoomLevel(zoom, false);
+                return;
+            }
+
+            // check if zoom is not null or undefined
+            if (requestZoom != null) {
+                // check if request is scale or zoom
+                zoom = requestZoom.scale
+                    ? { type: 'scale', value: this.mapModule.getResolutionForScale(requestZoom.scale) }
+                    : { type: 'zoom', value: requestZoom };
+            }
+            const success = this.mapModule.centerMap(lonlat, zoom, true, { animation });
+            if (success === false) {
+                this._log.warn('MapMoveRequest failed');
             }
         }
     }, {

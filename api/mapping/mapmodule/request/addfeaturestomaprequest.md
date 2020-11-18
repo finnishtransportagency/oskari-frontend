@@ -9,7 +9,15 @@ Allows user to add features to map.
 
 ## Description
 
-Vector features can be added on the map. The request must contain the geometries of the features. Optionally, also additional control options such as features' style can be provided in a JSON-object. The geometry must be provided either as a WKT-string or a GeoJSON - object, e.g.
+Adds vector features to the map or updates existing features.
+
+The request takes two parameters. The first describes the features. When updating existing features on map, the first parameter is an object containing feature attributes that are used for feature matching. The second parameter options.
+
+#### Adding features to map
+
+The first parameter, geometry must be provided either as a WKT-string or a GeoJSON - object. Request creates a new feature layer if any layer with given layer id doesn't exist. Optionally, also additional layer control options such as features' style can be provided in a JSON-object. 
+
+Recommendable practice is to prepare a layer with [VectorLayerRequest](/api/requests/#unreleased/mapping/mapmodule/request/vectorlayerrequest.md) before adding features.
 
 WKT
 ```javascript
@@ -51,83 +59,47 @@ var geojsonObject = {
 };
 ```
 
-Geometry can also feature properties object. This will identify feature what you want to update. This is usefull for example highlight feature.
-```javascript
-var updateFeature = {'test_property':2};
-```
+#### Updating existing features on map
 
-Options object
-```javascript
-{
-    layerId: 'MY_VECTOR_LAYER',
-    clearPrevious: true,
-    centerTo: true,
-    featureStyle: null,
-    optionalStyles: null,
-    attributes: null,
-    cursor: 'zoom-in',
-    prio: 1,
-    minScale: 1451336,
-    animationDuration: null
-}
-```
-<ul>
-	<li>
-		<b>layerId</b> - In case you want to add features on a specified layer (if the layer does not exist one will be created). Needed, if at a later point you need to be able to remove features on only that specific layer.
-	</li>
-	<li>
-		<b>clearPrevious</b> - when true, the previous features will be cleared
-	</li>
-	<li>
-		<b>centerTo</b> - Whether to zoom to the added features.
-	</li>
-	<li>
-		<b>featureStyle</b> - A style object.
-	</li>
-	<li>
-    <b>optionalStyles</b> - Styles for geojson features. Style is used, if feature property value matches to style property value
-    </li>
-	<li>
-		<b>attributes</b> - Feature's attributes, especially handy when the geometry is a WKT-string.
-	</li>
-  <li>
-    <b>cursor</b> - Mouse cursor when cursor is over the feature.
-  </li>
-  <li>
-    <b>prio</b> - Feature prio. The lowest number is the must important feature (top on the map). The highest number is the least important.
-  </li>
-  <li>
-    <b>minScale</b> - Feature min scale when zoomTo option is used. Don't let map scale to go below the defined scale when zoomed to features.
-  </li>
-  <li>
-    <b>animationDuration</b> - On update requests it's possible to animate fill color change. Specify animation duration in ms.
-  </li>
-</ul>
-
-FeatureStyle/optionalStyle object
-
-FeatureStyle property defines a generic style used for all the features. With optionalStyles property you can specify style for certain features only. The constructor is the same for both of these styles but in optionalStyle you also need to specify the feature it is used for:
+The first parameter is an object containing a feature property that is used for feature matching. The value can be an array or a single value.
 
 ```javascript
-property: {
-  key: 'id',
-  value: region
-}
+var updateFeatureWithProperty = {'test_property': [1,2]};
 ```
-<ul>
-  <li>
-    <b>key</b> - feature property what checked for use optional style.
-  </li>
-  <li>
-    <b>value</b> - feature property value what need match to use optianal style for feature.
-  </li>
-</ul>
 
-See [Oskari JSON style](/documentation/examples/oskari-style) for featureStyle/optionalStyle object definition.
+The property value can also be an object of properties that will be added to matching features.
+
+```javascript
+var updateFeatureWithProperty = {
+  'test_property': [
+    { 'value': 1, 'properties': { 'newly_added_property': 10 }},
+    { 'value': 2, 'properties': { 'newly_added_property': 20 }},
+  ]
+};
+```
+
+Updating supports `layerId`, `prio` and `featureStyle` options.
+
+#### Options
+The second parameter is options.
+
+|Key|Type|Description|
+|---:|:---:|:---|
+| layerId | string | Layer's id to specify which layer you want to add features (if the layer does not exist one will be created).|
+| animationDuration | number | On update requests it's possible to animate fill color change. Specify animation duration in ms.|
+| attributes | object | Feature's attributes, especially handy when the geometry is a WKT-string.|
+| clearPrevious | boolean | when true, the previous features will be cleared|
+| centerTo | boolean | Whether to zoom to the added features.|
+| cursor | string | Mouse cursor when cursor is over the feature.|
+| prio | number | Feature prio. The lowest number is the must important feature (top on the layer). The highest number is the least important.|
+| featureStyle | object | Defines a generic style used for all the features.|
+| optionalStyles | array | Array of Oskari styles for geojson features. Style is used, if filtering values matches to feature properties.|
+
+See [Oskari JSON style](/documentation/examples/oskari-style) for style object definitions.
 
 ## Examples
 
-Usage example (GeoJSON)
+Add feature using GeoJSON
 
 ```javascript
 // Define the features as GeoJSON
@@ -162,66 +134,19 @@ var geojsonObject = {
 	      }
         }
       ]
-    };```
+    };
 
-```
-// Some additional options for the layer
-var layerOptions = {
-    'minResolution': 2,
-    'maxResolution': 100
-};
-// Override some default styles
-var featureStyle = {
-  stroke: {
-    color: '#FF0000',
-    width: 10
-  }
-};
-// Override feature style with feature property based style
-var optionalStyles = [{
-  property: {
-      value: 'AIRPLANE',
-      key: 'mode'
-  },
-  fill: {
-      color: '#FF0000'
-  },
-  stroke: {
-      color: '#FF0000',
-      width: 5
-  }
-  },{
-  property: {
-      value: 'BUS',
-      key: 'mode'
-  },
-  fill: {
-      color: '#0000ff'
-  },
-  stroke: {
-      color: '#0000ff',
-      width: 5
-  }
-  }];
->- *key* is feature property name
->- *value* is the property matching value to style
-```
-
-```
 // Add the features on a specific layer
 var rn = 'MapModulePlugin.AddFeaturesToMapRequest';
-Oskari.getSandbox().postRequestByName(rn, [geojsonObject, {
-    layerId: 'MY_VECTOR_LAYER',
-    clearPrevious: true,
-    layerOptions: null,
-    centerTo: false,
-    featureStyle: featureStyle,
-    attributes: null,
-    optionalStyles: optionalStyles
-}]);
+var options = {
+  layerId: 'MY_VECTOR_LAYER',
+  centerTo: true
+};
+
+Oskari.getSandbox().postRequestByName(rn, [geojsonObject, options]);
 ```
 
-Usage example (WKT)
+Add feature using WKT
 
 ```javascript
 // Define a wkt-geometry
@@ -232,40 +157,19 @@ var attributes = {
   test_property: 1
 };
 
-// Styling
-var featureStyle = {
-  fill: {
-    color: 'rgba(0,0,0,0.3)',
-  },
-  stroke: {
-    color: '#FF0000',
-    width: 10
-  },
-  text : {
-    scale : 1.3,
-	  fill : {
-	    color : 'rgba(0,0,0,1)'
-	  },
-	  stroke : {
-	    color : 'rgba(255,255,255,1)',
-	    width : 2
-	  },
-	  labelProperty: 'test_property'
-  }
+// Add features
+var rn = 'MapModulePlugin.AddFeaturesToMapRequest';
+var options = {
+  layerId: 'MY_VECTOR_LAYER',
+  centerTo: true,
+  attributes
 };
 
-// Add features
-channel.postRequest('MapModulePlugin.AddFeaturesToMapRequest', [WKT, {
-    layerId: 'MY_VECTOR_LAYER',
-    clearPrevious: true,
-    layerOptions: null,
-    centerTo: false,
-    featureStyle: featureStyle,
-    attributes: attributes
-}]);
+Oskari.getSandbox().postRequestByName(rn, [WKT, options]);
 ```
 
-Update specific feature.
+Update specific feature
+
 ```javascript
 // First add feature, feature format can be an WKT or GeoJSON
 // Define a wkt-geometry
@@ -273,43 +177,18 @@ var WKT = "POLYGON ((358911.7134508261 6639617.669712467, 358911.7134508261 6694
 
 // Some attributes for the feature
 var attributes = {
-  test_property: 1
-};
-
-// Styling
-var featureStyle = {
-  fill: {
-    color: 'rgba(0,0,0,0.3)',
-  },
-  stroke: {
-    color: '#FF0000',
-    width: 10
-  },
-  text : {
-    scale : 1.3,
-    fill : {
-      color : 'rgba(0,0,0,1)'
-    },
-    stroke : {
-      color : 'rgba(255,255,255,1)',
-      width : 2
-    },
-    labelProperty: 'test_property'
-  }
+  test_property: 100
 };
 
 // Add features
-channel.postRequest('MapModulePlugin.AddFeaturesToMapRequest', [WKT, {
+Oskari.getSandbox().postRequestByName('MapModulePlugin.AddFeaturesToMapRequest', [WKT, {
     layerId: 'MY_VECTOR_LAYER',
     clearPrevious: true,
-    layerOptions: null,
-    centerTo: false,
-    featureStyle: featureStyle,
     attributes: attributes
 }]);
 
 // Now update previously added feature
-// For example change stroke style and animate 1 second fill color shift to blue
+// For example change style and animate 1 second shift to new style
 var featureStyle = {
   stroke: {
     color: '#00FF00',
@@ -322,20 +201,25 @@ var featureStyle = {
 
 // Define wanted feature attributes
 var updatedFeatureAttributes = {'test_property':1};
-var params = [updatedFeatureAttributes, {
+
+var options = {
     featureStyle: featureStyle,
     layerId: 'MY_VECTOR_LAYER',
     animationDuration: 1000
-}];
+};
 
-channel.postRequest(
+Oskari.getSandbox().postRequestByName(
     'MapModulePlugin.AddFeaturesToMapRequest',
-    params
+     [updatedFeatureAttributes, options]
 );
 ```
 
-## Related api
+## RPC examples
+See [Add or remove vector features](/examples/rpc-api/rpc_example.html) for full example.
 
+## Related api
 - VectorLayerRequest
 - RemoveFeaturesFromMapRequest
+
+
 

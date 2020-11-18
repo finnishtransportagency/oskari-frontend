@@ -21,8 +21,8 @@ Oskari.clazz.define('Oskari.mapframework.event.common.AfterMapMoveEvent',
      * @param {String} creator
      *            class identifier of an object that sends an event
      */
-    function (centerX, centerY, zoom, scale, creator) {
-        this._creator = creator || null;
+    function (centerX, centerY, zoom, scale, camera) {
+        this._camera = camera || null;
         this._centerX = centerX;
         this._centerY = centerY;
         this._zoom = zoom;
@@ -36,13 +36,6 @@ Oskari.clazz.define('Oskari.mapframework.event.common.AfterMapMoveEvent',
          */
         getName: function () {
             return this.__name;
-        },
-        /**
-         * @method getCreator
-         * @return {String} identifier for the event sender
-         */
-        getCreator: function () {
-            return this._creator;
         },
         /**
          * @method getCenterX
@@ -73,14 +66,28 @@ Oskari.clazz.define('Oskari.mapframework.event.common.AfterMapMoveEvent',
             return this._scale;
         },
 
+        /**
+         * @method getCamera
+         * @return {Object} object with heading pitch and roll for 3d maps
+         */
+        getCamera: function () {
+            return this._camera;
+        },
+
         getParams: function () {
-            var me = this;
-            return {
-                centerX: me._centerX,
-                centerY: me._centerY,
-                zoom: me._zoom,
-                scale: me._scale
+            const rpcPayload = {
+                centerX: this.getCenterX(),
+                centerY: this.getCenterY(),
+                zoom: this.getZoom(),
+                scale: this.getScale()
             };
+            const cam = this.getCamera();
+            if (cam) {
+                // only attach camera info if it is available (=~ using 3D mapmodule)
+                rpcPayload.camera = cam;
+            }
+
+            return rpcPayload;
         }
     }, {
         /**

@@ -16,13 +16,14 @@ import {
  */
 Oskari.clazz.defineES('Oskari.mapframework.service.VectorFeatureService',
     class VectorFeatureService {
-        constructor (sandbox, olMap) {
+        constructor (sandbox, mapmodule) {
             this.__name = 'VectorFeatureService';
             this.__qname = 'Oskari.mapframework.service.VectorFeatureService';
             this._log = Oskari.log('VectorFeatureService');
             this._sandbox = sandbox;
             this._tooltipOverlay = null;
-            this._map = olMap;
+            this._map = mapmodule.getMap();
+            this._mapmodule = mapmodule;
             this._featureFormatter = new olFormatGeoJSON();
             this._tooltipState = {
                 feature: null
@@ -73,10 +74,14 @@ Oskari.clazz.defineES('Oskari.mapframework.service.VectorFeatureService',
          */
         getTooltipOverlay () {
             if (!this._tooltipOverlay) {
+                // FIXME: There is code in VectorLayerPlugin.o.js that creates a tooltip overlay as well
+                // Changing this one seems to take effect so the other one can probably be removed or cleaned out
                 const overlayDiv = document.createElement('div');
                 overlayDiv.className = 'feature-hover-overlay';
                 this._tooltipOverlay = new olOverlay({
-                    element: overlayDiv
+                    element: overlayDiv,
+                    offset: [10, -10],
+                    stopEvent: false
                 });
                 this._map.addOverlay(this._tooltipOverlay);
             }
@@ -393,7 +398,7 @@ Oskari.clazz.defineES('Oskari.mapframework.service.VectorFeatureService',
         _onMapClicked (event) {
             const me = this;
             let clickHits = [];
-            me._map.forEachFeatureAtPixel([event.getMouseX(), event.getMouseY()], (feature, layer) => {
+            this._mapmodule.forEachFeatureAtPixel([event.getMouseX(), event.getMouseY()], (feature, layer) => {
                 if (!layer) {
                     return;
                 }

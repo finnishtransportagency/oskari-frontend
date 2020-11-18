@@ -6,9 +6,14 @@ Oskari.clazz.define('Oskari.mapframework.publisher.tool.ScalebarTool',
         lefthanded: 'bottom left',
         righthanded: 'bottom right',
         allowedSiblings: [
-            'Oskari.mapframework.bundle.mapmodule.plugin.IndexMapPlugin',
-            'Oskari.mapframework.bundle.mapmodule.plugin.LogoPlugin',
-            'Oskari.statistics.bundle.statsgrid.plugin.ManageClassificationPlugin'
+            'Oskari.mapframework.bundle.featuredata2.plugin.FeaturedataPlugin',
+            'Oskari.mapframework.bundle.mapmodule.plugin.MyLocationPlugin',
+            'Oskari.mapframework.bundle.mapmodule.plugin.PanButtons',
+            'Oskari.mapframework.bundle.mapmodule.plugin.Portti2Zoombar',
+            'Oskari.mapframework.bundle.coordinatetool.plugin.CoordinateToolPlugin',
+            'Oskari.mapping.cameracontrols3d.CameraControls3dPlugin',
+            'Oskari.mapping.time-control-3d.TimeControl3dPlugin',
+            'Oskari.mapping.maprotator.MapRotatorPlugin'
         ],
         groupedSiblings: false,
 

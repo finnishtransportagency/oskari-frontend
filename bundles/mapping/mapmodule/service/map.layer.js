@@ -28,6 +28,8 @@ Oskari.clazz.define('Oskari.mapframework.service.MapLayerService',
         // used to store sticky layer ids - key = layer id, value = true if sticky (=layer cant be removed)
         this._stickyLayerIds = {};
         this._layerGroups = [];
+        this._dataProviders = [];
+        this.composingModels = {};
 
         this.loc = Oskari.getMsg.bind(null, 'MapModule');
 
@@ -58,20 +60,22 @@ Oskari.clazz.define('Oskari.mapframework.service.MapLayerService',
         /*
          * Layer filters
          */
+        const rasterLayerTypes = ['wmts', 'bingmaps', 'arcgis', 'wms', 'arcgis93'];
         this.layerFilters = {
-            'featuredata': function (layer) {
+            featuredata: function (layer) {
                 return layer.hasFeatureData();
             },
-            'newest': function (layer) {
+            newest: function (layer) {
                 // kinda heavy, but get a list of 20 newest layers and check if the requested layer is one them
                 // getNewestLayers() caches the result so in practice it's not as heavy as it looks.
                 return !!me.getNewestLayers(20).find(function (newLayer) {
                     return layer.getId() === newLayer.getId();
                 });
             },
-            'timeseries': function (layer) {
+            timeseries: function (layer) {
                 return layer.hasTimeseries();
-            }
+            },
+            raster: layer => rasterLayerTypes.includes(layer.getLayerType())
         };
 
         Oskari.makeObservable(this);
@@ -124,6 +128,7 @@ Oskari.clazz.define('Oskari.mapframework.service.MapLayerService',
          * @throws error if layer with the same id already exists
          */
         addLayer: function (layerModel, suppressEvent) {
+            var me = this;
             if (!layerModel) {
                 Oskari.log(this.getName()).warn('Called addLayer without a layer!');
                 return;
@@ -134,20 +139,38 @@ Oskari.clazz.define('Oskari.mapframework.service.MapLayerService',
                 return;
             }
 
+            const layerId = layerModel.getId();
             // throws exception if the id is reserved to existing maplayer
             // we need to check again here
-            this.checkForDuplicateId(layerModel.getId(), layerModel.getName());
+            this.checkForDuplicateId(layerId, layerModel.getName());
 
-            this._reservedLayerIds[layerModel.getId()] = true;
+            this._reservedLayerIds[layerId] = true;
             // everything ok, lets add the layer
             this._loadedLayersList.push(layerModel);
 
             // flush cache for newest filter when layer is added
             this._newestLayers = null;
 
+            const groups = layerModel.getGroups();
+            if (groups && groups.length > 0) {
+                // for each group on the layer
+                groups.forEach(function (group) {
+                    // find the group details
+                    var groupConf = me.getAllLayerGroups(group.id);
+                    if (!groupConf) {
+                        return;
+                    }
+                    groupConf.addChildren({
+                        type: 'layer',
+                        id: layerId,
+                        order: 1000000
+                    });
+                });
+            }
+
             if (suppressEvent !== true) {
                 // notify components of added layer if not suppressed
-                var event = Oskari.eventBuilder('MapLayerEvent')(layerModel.getId(), 'add');
+                var event = Oskari.eventBuilder('MapLayerEvent')(layerId, 'add');
                 this.getSandbox().notifyAll(event);
             }
         },
@@ -289,14 +312,11 @@ Oskari.clazz.define('Oskari.mapframework.service.MapLayerService',
             if (newLayerConf.legendImage) {
                 layer.setLegendImage(newLayerConf.legendImage);
             }
+            // Scales need to be set always so they can be cleared with the admin.
+            // The server doesn't return scale if not set -> these will not get updated if only updated when value exists
+            layer.setMinScale(newLayerConf.minScale);
+            layer.setMaxScale(newLayerConf.maxScale);
 
-            if (newLayerConf.minScale) {
-                layer.setMinScale(newLayerConf.minScale);
-            }
-
-            if (newLayerConf.maxScale) {
-                layer.setMaxScale(newLayerConf.maxScale);
-            }
             if (newLayerConf.opacity) {
                 layer.setOpacity(newLayerConf.opacity);
             }
@@ -386,8 +406,9 @@ Oskari.clazz.define('Oskari.mapframework.service.MapLayerService',
          * @method deleteLayerGroup
          * @param  {Integer}         id group id
          * @param {Integer}          parentId parent id
+         * @param {Boolean}          deleteLayers deleteLayers
          */
-        deleteLayerGroup: function (id, parentId) {
+        deleteLayerGroup: function (id, parentId, deleteLayers) {
             var me = this;
             var editable = me.getAllLayerGroups(parentId);
 
@@ -409,6 +430,22 @@ Oskari.clazz.define('Oskari.mapframework.service.MapLayerService',
             } else {
                 editable.splice(groupIndex, 1);
             }
+            if (deleteLayers) {
+                // Remove layers
+                const deletedLayerIds = this._loadedLayersList.filter(l => l._groups.filter(g => g.id === id).length > 0).map(l => l.getId());
+                this._loadedLayersList = this._loadedLayersList.filter(l => !deletedLayerIds.includes(l._id));
+            } else if (typeof deleteLayers !== 'undefined' && !deleteLayers) {
+                // Clear group from needed layers.
+                this.getAllLayers().filter(l => l._groups.filter(g => g.id === id).length > 0).map(l => {
+                    const groups = [...l._groups];
+                    const index = groups.findIndex(g => g.id === id);
+                    if (index !== -1) {
+                        groups.splice(index, 1);
+                        l._groups = groups;
+                    }
+                });
+            }
+            this.trigger('theme.update');
         },
         /**
          * Updata layer groups
@@ -602,6 +639,85 @@ Oskari.clazz.define('Oskari.mapframework.service.MapLayerService',
                 }
             });
         },
+
+        /**
+         * @method addLayerGroup
+         * @param {Oskari.mapframework.domain.MaplayerGroup} group map layer group to add.
+         */
+        addLayerGroup: function (group) {
+            this._layerGroups.push(group);
+            this.trigger('theme.update');
+        },
+        /**
+         * @method updateLayerGroup
+         * @param {Oskari.mapframework.domain.MaplayerGroup} group map layer group to update.
+         */
+        updateLayerGroup: function (group) {
+            // Update group to layerGroups
+            const index = this._layerGroups.findIndex(g => g.getId() === group.getId());
+            if (index !== -1) {
+                this._layerGroups[index] = group;
+            }
+            // Update group to needed layers. Groups under layer only contains group name with current localization
+            const lang = Oskari.getLang();
+            this.getAllLayers().filter(l =>
+                l._groups.filter(g => g.id === group.id).map(g => (g.name = group.name[lang])));
+            this.trigger('theme.update');
+        },
+        /**
+         * @method updateDataProvider
+         * @param dataProvider object with structure like {id: 1, name "Provider name"}
+         */
+        updateDataProvider: function (dataProvider) {
+            // Update dataProvider to dataProviders
+            const index = this._dataProviders.findIndex(g => g.id === dataProvider.id);
+            if (index !== -1) {
+                this._dataProviders[index] = dataProvider;
+            }
+            // Update dataProvider to needed layers.
+            this.getAllLayers().filter(l => l.admin && l.admin.organizationId === dataProvider.id).map(l => (l._organizationName = dataProvider.name));
+            this.trigger('dataProvider.update');
+        },
+        /**
+         * @method deleteDataProvider
+         * @param dataProvider object with structure like {id: 1, name "Provider name"}
+         * @param deleteLayers boolean should layers be deleted
+         */
+        deleteDataProvider: function (dataProvider, deleteLayers) {
+            // Delete dataProvider from dataProviders
+            const index = this._dataProviders.findIndex(g => g.id === dataProvider.id);
+            if (index !== -1) {
+                const d = [...this._dataProviders];
+                d.splice(index, 1);
+                this._dataProviders = d;
+            }
+            if (deleteLayers) {
+                // Remove layers
+                const layers = this._loadedLayersList.filter(l => {
+                    if (!l.admin) {
+                        return true;
+                    }
+                    return l.admin.organizationId !== dataProvider.id;
+                });
+                this._loadedLayersList = layers;
+            } else {
+                // Clear data provider from needed layers.
+                this.getAllLayers().filter(l => l.admin && l.admin.organizationId === dataProvider.id).map(l => {
+                    l._organizationName = '';
+                    delete l.admin.organizationId;
+                });
+            }
+            this.trigger('dataProvider.update');
+        },
+        /**
+         * @method addDataProvider
+         * @param dataProvider object with structure like {id: 1, name "Provider name"}
+         */
+        addDataProvider: function (dataProvider) {
+            this._dataProviders.push(dataProvider);
+            this.trigger('dataProvider.update');
+        },
+
         /**
          * @method _loadAllLayerGroupsAjaxCallBack
          * Internal callback method for ajax loading in #loadAllLayerGroupsAjax()
@@ -939,9 +1055,27 @@ Oskari.clazz.define('Oskari.mapframework.service.MapLayerService',
          *            Mapping from map-layer json "type" parameter to a class as in #typeMapping
          * @param {String|Function} modelRef
          *            layer model clazz name (like 'Oskari.mapframework.domain.WmsLayer') or constructor function
+         * @param {Oskari.mapframework.domain.LayerComposingModel} composingModel
          */
-        registerLayerModel: function (type, modelRef) {
+        registerLayerModel: function (type, modelRef, composingModel) {
             this.typeMapping[type] = modelRef;
+            if (composingModel) {
+                this.composingModels[type] = composingModel;
+                this.trigger('availableLayerTypesUpdated', type);
+            }
+        },
+        getVersionsForType (type) {
+            const composingModel = this.composingModels[type];
+            if (!composingModel) {
+                return [];
+            }
+            return composingModel.getVersions();
+        },
+        getComposingModelForType (type) {
+            return this.composingModels[type];
+        },
+        getLayerTypes () {
+            return Object.keys(this.composingModels) || [];
         },
         /**
          * @method unregisterLayerModel
@@ -953,6 +1087,7 @@ Oskari.clazz.define('Oskari.mapframework.service.MapLayerService',
          */
         unregisterLayerModel: function (type) {
             delete this.typeMapping[type];
+            delete this.composingModels[type];
         },
 
         /**
@@ -1431,6 +1566,9 @@ Oskari.clazz.define('Oskari.mapframework.service.MapLayerService',
          *  layerModel if found matching id or null if not found
          */
         findMapLayer: function (id, layerList) {
+            if (typeof id === 'undefined') {
+                return;
+            }
             if (!layerList) {
                 layerList = this._loadedLayersList;
             }
@@ -1502,6 +1640,15 @@ Oskari.clazz.define('Oskari.mapframework.service.MapLayerService',
             });
             // return true if all layers were found
             return !missingLayer;
+        },
+
+        setDataProviders: function (dataProviders) {
+            this._dataProviders = dataProviders;
+            this.trigger('dataProvider.update');
+        },
+
+        getDataProviders: function () {
+            return this._dataProviders;
         }
     }, {
         /**

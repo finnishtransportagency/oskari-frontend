@@ -6,6 +6,9 @@ Oskari.registerLocalization({
         "desc": "",
         "default-style": "Standard stil",
         "own-style": "Egen stil",
+        "own-styles-flyout-title": "Egna stilar",
+        "styles" : "Stilar",
+        "add-style" : "Lägg till stil",
         "refresh": "Refresh",
         "refresh_title": "Refresh WFS-layers, which are not rendered automatically on a map",
         "tile": {
@@ -50,6 +53,10 @@ Oskari.registerLocalization({
         "scale_dialog": {
             "title": "Skaala uppdaterad",
             "msg": "Detta kartlager kan inte visas på den valda skalnivån."
+        },
+        "layerFilter": {
+            "tooltip": "Visa endast kartlager med vektorgrafik",
+            "featuredata": "Vektorlager"
         }
     }
 });

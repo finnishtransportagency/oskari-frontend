@@ -11,7 +11,8 @@ Oskari.registerLocalization(
         },
         "published": {
             "title": "Embedded Map Saved",
-            "desc": "The embedded map has been saved. Publish it on your website by copying this code to the html code on your website:"
+            "desc": "The embedded map has been saved. Publish it on your website by copying this code to the html code on your website:",
+            "copy": "Copy to the clipboard"
         },
         "edit": {
             "popup": {
@@ -36,9 +37,10 @@ Oskari.registerLocalization(
             },
             "domain": {
                 "title": "Basic settings",
-                "label": "Allow embedding only in following domain",
+                "label": "Restrict embedding only to the following <br>web address:",
                 "placeholder": "Allowed domain",
-                "tooltip": "Type a website URL-address without prefixes or a subpage address. For example: homepage.com."
+                "tooltip": "Type a website URL-address without prefixes or a subpage address. For example: homepage.com.",
+                "inputWarning": "Verify typed web address"
             },
             "name": {
                 "label": "Map name (required)",
@@ -57,7 +59,7 @@ Oskari.registerLocalization(
             },
             "size": {
                 "label": "Map Size",
-                "tooltip": "Select preview mode."
+                "tooltip": "Determine the size of the map. The recommendation is to use the option \"Scalable/ Responsive\". Otherwise, the width should be from {minWidth} to {maxWidth} pixels and the height from {minHeight} to {maxHeight} pixels."
             },
             "maptools": {
                 "label": "Tools",
@@ -80,6 +82,8 @@ Oskari.registerLocalization(
                 "MapLegend": "Show map legend",
                 "MapRotator": "Enable map rotation",
                 "CrosshairTool": "Show map focal point",
+                "CameraControls3d": "Camera tools",
+                "TimeControl3d": "Time control",
                 "toolbarToolNames": {
                     "history": "Move to previous or next view",
                     "history_back": "Move to previous view",
@@ -105,6 +109,17 @@ Oskari.registerLocalization(
                     "info": "Select the background map layer. You can select the default background map layer in the map preview.",
                     "selectAsBaselayer": "Select as baselayer",
                     "allowStyleChange": "Allow style change"
+                },
+                "mylocation": {
+                    "modes": {
+                        "single": "Single",
+                        "continuous": "Continuous"
+                    },
+                    "titles": {
+                        "mode": "Mode",
+                        "mobileOnly": "Enable functionality only for mobile devices",
+                        "centerMapAutomatically": "Center map on user location at startup"
+                    }
                 }
             },
             "toollayout": {
@@ -177,7 +192,7 @@ Oskari.registerLocalization(
                 "small": "Small",
                 "medium": "Medium",
                 "large": "Large",
-                "fill": "Space filling",
+                "fill": "Scalable / Responsive",
                 "custom": "Custom size",
                 "width": "width",
                 "height": "height",
@@ -194,7 +209,7 @@ Oskari.registerLocalization(
             "confirm": {
                 "replace": {
                     "title": "Do you want to update this map?",
-                    "msg": "Updates are shown immediately on the map. You do not need to update the html code on your website."
+                    "msg": "Do you want to update this map? Updates are shown immediately on the map. You do not need to update the html code on your website unless you have changed the size of the map."
                 }
             },
             "layerselection": {
@@ -209,7 +224,7 @@ Oskari.registerLocalization(
             "help": "Help",
             "error": {
                 "title": "Error",
-                "size": "The map size is invalid. Width must be at least 30 pixels and height at least 20 pixels. Use a point as a decimal separator.",
+                "size": "The map size is invalid. The width should be from {minWidth} to {maxWidth} pixels and the height from {minHeight} to {maxHeight} pixels.",
                 "domain": "The website is required. Please type an address and try again.",
                 "domainStart": "The website is invalid. Please type an address without http or www prefixes and try again.",
                 "name": "The map name is required. Plese type a name and try again.",
@@ -267,7 +282,7 @@ Oskari.registerLocalization(
         },
         "guidedTour": {
             "title": "Map Publishing",
-            "message": "In the Map Publishing menu you can publish embedded maps on your own website. <br/><br/> Select map layers, define a website, select tools and desing a layout. Click Save and your map is ready for publishing. Jast copy one line html code to your website. <br/><br/> If you want to update the map, you can find it in the My Data menu. Updates are shown immediately on your map. <br/><br/> Map Publishing is available only for logged-in users.",
+            "message": "In the Map Publishing menu you can publish embedded maps on your own website. <br/><br/> Select map layers, define a website, select tools and desing a layout. Click Save and your map is ready for publishing. Just copy one line html code to your website. <br/><br/> If you want to update the map, you can find it in the My Data menu. Updates are shown immediately on your map. <br/><br/> Map Publishing is available only for logged-in users.",
             "openLink": "Show Map Publishing",
             "closeLink": "Hide Map Publishing",
             "tileText": "Map Publishing"

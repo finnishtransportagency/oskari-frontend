@@ -9,6 +9,64 @@ Some extra tags:
 - [rpc] tag indicates that the change affects RPC API
 - [breaking] tag indicates that the change is not backwards compatible
 
+## 2.1.0
+
+### [mod] [rpc] ZoomToFeaturesRequest
+
+Now supports an optional maxZoomLevel flag to restrict the amount of zooming we are willing to make while showing the features. This is useful for point features or features that are close to each other. Without this the map might zoom "all-in" that might not be what we want to do.
+
+### [mod] [rpc] VectorLayerRequest
+
+Now can be used to remove vector layers that have been added with the same request. Can be used to cleanup etc.
+
+## 1.55.0
+
+### [add] [rpc] New SetTimeRequest Request
+
+Request to set time for 3d map.
+
+date
+Date as a string D/M
+```javascript
+'28/2' || '1/2' || '01/02' || '01/2'
+```
+
+time
+Time as a string H:m
+```javascript
+'10:22' || '9:02'
+```
+
+year
+Year as a number, defaults to current year (optional)
+```javascript
+2019 || 2010
+```
+
+
+### [mod] [rpc] AfterMapMoveEvent
+
+Event now includes details for camera position when using the 3D mapmodule
+
+## 1.54.0
+
+### [add] [rpc] New MapTourRequest Request
+
+Request to move along the map from point to point.
+
+locations
+List of locations as an array of objects.
+Contains longitude, latitude and various optional override options
+```javascript
+[ { lon, lat }, { lon, lat, duration, delay, zoom, camera: { heading, pitch, roll }, animation } ]
+```
+
+options
+Object with optional parameters for options as default for all locations.
+```javascript
+{ duration, delay, zoom, camera: { heading, pitch, roll }, animation, srsName }
+```
+
 ## 1.53.0
 
 ### [mod] [rpc] MapMoveRequest

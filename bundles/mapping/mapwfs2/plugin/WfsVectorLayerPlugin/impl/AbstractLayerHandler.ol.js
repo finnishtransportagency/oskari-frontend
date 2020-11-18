@@ -1,4 +1,5 @@
 import { getFieldsArray, getPropsArray } from '../util/props';
+import { getZoomLevelHelper } from '../../../../mapmodule/util/scale';
 
 const FEATURE_DATA_UPDATE_THROTTLE = 1000;
 
@@ -36,7 +37,8 @@ export class AbstractLayerHandler {
     createEventHandlers () {
         return {
             AfterChangeMapLayerStyleEvent: event => this._updateLayerStyle(event.getMapLayer()),
-            AfterChangeMapLayerOpacityEvent: event => this._updateLayerOpacity(event.getMapLayer())
+            AfterChangeMapLayerOpacityEvent: event => this._updateLayerOpacity(event.getMapLayer()),
+            MapLayerVisibilityChangedEvent: event => this._updateLayerStyle(event.getMapLayer())
         };
     }
     /**
@@ -83,8 +85,8 @@ export class AbstractLayerHandler {
         const { left, bottom, right, top } = this.plugin.getSandbox().getMap().getBbox();
         const propsList = this._getFeaturePropsInExtent(source, [left, bottom, right, top]);
         const fields = getFieldsArray(propsList);
-        // Update fields and locales only if fields is not empty and it has changed
-        if (fields && layer.getFields().length < fields.length) {
+        // Update fields and locales only if fields is empty
+        if (!layer.getFields().length) {
             this.plugin.setWFSProperties(layer, fields);
             return;
         }
@@ -143,14 +145,8 @@ export class AbstractLayerHandler {
 
     applyZoomBounds (layerDef, layerImpl) {
         const mapModule = this.plugin.getMapModule();
-        // Set min max Resolutions
-        if (layerDef.getMaxScale() && layerDef.getMaxScale() !== -1) {
-            layerImpl.setMinResolution(mapModule.getResolutionForScale(layerDef.getMaxScale()));
-        }
-        // No definition, if scale is greater than max resolution scale
-        if (layerDef.getMinScale() && layerDef.getMinScale() !== -1 && (layerDef.getMinScale() < mapModule.getScaleArray()[0])) {
-            layerImpl.setMaxResolution(mapModule.getResolutionForScale(layerDef.getMinScale()));
-        }
+        const zoomLevelHelper = getZoomLevelHelper(mapModule.getScaleArray());
+        zoomLevelHelper.setOLZoomLimits(layerImpl, layerDef.getMinScale(), layerDef.getMaxScale());
     }
 
     sendWFSStatusChangedEvent (layerId, status) {

@@ -7,11 +7,12 @@ Oskari.registerLocalization(
             "title": "Kartpublicering"
         },
         "flyout": {
-            "title": "Skapa inbäddad karta"
+            "title": "Kartpublicering"
         },
         "published": {
             "title": "Kartan har skapats för att kunna bäddas in",
-            "desc": "Karta har skapats. Bädda in kartan genom att lägga till HTML-koden nedan till din webbplats och du har kartan på din webbplats:"
+            "desc": "Karta har skapats. Bädda in kartan genom att lägga till HTML-koden nedan till din webbplats och du har kartan på din webbplats:",
+            "copy": "Kopiera till klippbordet"
         },
         "edit": {
             "popup": {
@@ -28,7 +29,7 @@ Oskari.registerLocalization(
             }
         },
         "BasicView": {
-            "title": "Inbädda kartan",
+            "title": "Skapa inbäddad karta",
             "titleEdit": "Redigera den inbäddade karta",
             "transfer": {
                 "label": "Överföra konfigurationen",
@@ -36,14 +37,15 @@ Oskari.registerLocalization(
             },
             "domain": {
                 "title": "Webbplats",
-                "label": "Tillåt inbäddning endast på följande webbplats",
+                "label": "Begränsa inbäddning endast till följande <br>webbadress:",
                 "placeholder": "Webbplats adress",
-                "tooltip": "Skriv namnet på webbplatsens hemsida dvs. domainnamn utan prefixerna http och www samt utan undersida. Exempel: minhemsida.com"
+                "tooltip": "Skriv namnet på webbplatsens hemsida dvs. domainnamn utan prefixerna http och www samt utan undersida. Exempel: minhemsida.com",
+                "inputWarning": "Kontrollera nätverksadressen du angav"
             },
             "name": {
                 "label": "Kartans namn",
                 "placeholder": "Obligatorisk uppgift",
-                "tooltip": "Välj ett språk på kartan. Språket användas på användargänsnitt och text på kartan. Obs! Valt språk visas inte på förhandsvisningskartan."
+                "tooltip": "Ge namn åt kartan. Välj språket med hänsyn till webbsidans språk."
             },
             "language": {
                 "label": "Språk",
@@ -52,11 +54,12 @@ Oskari.registerLocalization(
                     "sv": "Svenska",
                     "en": "Engelska"
                 },
-                "tooltip": "Välj språk för kartmaterial och användargränssnitt."
+                "tooltip": "Välj ett språk på kartan. Språket användas på användargänsnitt och text på kartan. Obs! Valt språk visas inte på förhandsvisningskartan.",
+                "languageChangedDisclaimer": "Obs! Valt språk visas inte på förhandsvisningskartan."
             },
             "size": {
-                "label": "Kart storlek",
-                "tooltip": "Välj en kart storlek. Bredd måste vara minst 20 pixel och höjd minst 30 pixel. Skilj av decimal med ett komma. Du ka se uppdateringar på förvisningskartan."
+                "label": "Kartstorlek",
+                "tooltip": "Välj kartans storlek. Vi rekommenderar den skalbara funktionen \"Skalbar / Fyll utrymmet\". Annars skall bredden vara minst {minWidth} och högst {maxWidth} pixel, och bredden mellan {minHeight} och {maxHeight} pixel."
             },
             "maptools": {
                 "label": "Verktyg",
@@ -67,18 +70,20 @@ Oskari.registerLocalization(
                 "PanButtons": "Panoreringsverktyg",
                 "Portti2Zoombar": "Skalans glidreglage",
                 "MyLocationPlugin": "Centrera kartan på användarens position",
-                "ControlsPlugin": "Panorering kartan",
+                "ControlsPlugin": "Flytta kartvyn med musen",
                 "SearchPlugin": "Adress- och ortnamnssökning",
                 "FeaturedataPlugin": "Objektuppgifter",
-                "GetInfoPlugin": "Verktyg för förfrågan som gäller uppgifter om objektet",
+                "GetInfoPlugin": "Frågverktyg för visande av objektuppgifter",
                 "PublisherToolbarPlugin": "Kartverktyg",
                 "selectDrawLayer": "Välj lager för nya funktioner",
-                "LayerSelectionPlugin": "Kartlagren meny",
-                "CoordinateToolPlugin": "Koordinat verktyg",
-                "FeedbackServiceTool": "Feedback (Open311) functionality",
+                "LayerSelectionPlugin": "Kartlagermeny",
+                "CoordinateToolPlugin": "Koordinatverktyg",
+                "FeedbackServiceTool": "Responsverktyg (Open311)",
                 "MapLegend": "Visa kartförklaringen",
                 "MapRotator": "Tillåt kartrotation",
                 "CrosshairTool": "Visa kartans mittpunkt",
+                "CameraControls3d": "Kameraverktyg",
+                "TimeControl3d": "Tidskontroll",
                 "toolbarToolNames": {
                     "history": "Gå bakåt eller framåt",
                     "history_back": "Gå bakåt",
@@ -104,10 +109,21 @@ Oskari.registerLocalization(
                     "info": "Välj bakgrundskartlager. Du kan göra förval i förhandsgranskningsvyn.",
                     "selectAsBaselayer": "Välj bakgrundskartlager",
                     "allowStyleChange": "Tillåta stiländring"
+                },
+                "mylocation": {
+                    "modes": {
+                        "single": "Enskild",
+                        "continuous": "Fortsatt"
+                    },
+                    "titles": {
+                        "mode": "Funktion",
+                        "mobileOnly": "Tillåt funktionen endast för mobilapparater",
+                        "centerMapAutomatically": "Centrera kartan till användarens plats vid start"
+                    }
                 }
             },
             "toollayout": {
-                "label": "Verktygs placering",
+                "label": "Verktygsplacering",
                 "tooltip": "Välj placering för det verktyg som ska visas på kartan.",
                 "lefthanded": "Vänsterhänt",
                 "righthanded": "Högerhänt",
@@ -126,7 +142,7 @@ Oskari.registerLocalization(
                 "allowHidingSeriesControl" : "Tillåt att gömma seriespelare"
             },
             "layout": {
-                "label": "Grafisk Layout",
+                "label": "Grafisk layout",
                 "fields": {
                     "colours": {
                         "label": "Färgschema",
@@ -176,7 +192,7 @@ Oskari.registerLocalization(
                 "small": "Liten",
                 "medium": "Medelstor",
                 "large": "Stor",
-                "fill": "Fyll utrymmet",
+                "fill": "Skalbar / Fyll utrymmet",
                 "custom": "Anpassad storlek",
                 "width": "bredd",
                 "height": "höjd",
@@ -193,11 +209,11 @@ Oskari.registerLocalization(
             "confirm": {
                 "replace": {
                     "title": "Vill du ersätta den inbäddade kartan?",
-                    "msg": "Förändringarna i den tidigare inbäddade kartan kommer att visas utan dröjsmål på kartan. Du behöver inte lägga till HTML-kod till din webbplats igen."
+                    "msg": "Vill du uppdatera den inbäddade kartan? Förändringarna till den tidigare inbäddade kartan kommer att visas utan dröjsmål på kartan. Du behöver inte ändra html-koden på din webbplats om du inte ändrat kartans storlek."
                 }
             },
             "layerselection": {
-                "label": "Kartlagren",
+                "label": "Kartlager",
                 "info": "Välj bakgrundskartlager. Du kan göra förval i förhandsgranskningsvyn.",
                 "tooltip": "Bakgrundskartlagret syns som kartans nedersta lager. När du väljer kartan som används som bakgrundskarta syns endast ett lager i taget och du kan växla mellan dem. Du kan göra förval i förhandsgranskningsvyn.",
                 "promote": "Vill du också visa flygbilder?"
@@ -208,7 +224,7 @@ Oskari.registerLocalization(
             "help": "Hjälp",
             "error": {
                 "title": "Fel!",
-                "size": "Fel i storleksdefinitionerna.",
+                "size": "Fel i storleksdefinitionerna. Skall bredden vara minst {minWidth} och högst {maxWidth} pixel, och bredden mellan {minHeight} och {maxHeight} pixel.",
                 "domain": "Webbplatsen är en nödvändig uppgift.",
                 "domainStart": "Skriv webbplatsens adress utan prefixerna http och www",
                 "name": "Kartans namn krävs",
@@ -224,9 +240,9 @@ Oskari.registerLocalization(
             "register": "Registrera dig"
         },
         "StartView": {
-            "text": "Du kan inbädda den kartvy som du har definierat här på din egen webbplats.",
-            "touLink": "Vis användningsvillkor till kartinbäddningen",
-            "layerlist_title": "Kartlager som kan inbäddas",
+            "text": "Skapa kartvy som du kan inbädda på din egen webbplats.",
+            "touLink": "Visa användningsvillkoren till kartpublicering",
+            "layerlist_title": "Valda kartlager som kan inbäddas",
             "layerlist_empty": "Valda kartlager kan inte publiceras i en inbäddad karta. Kontrollera rätten att publicera i menyn \"Valda Kartlager\" innan du börjar skapa kartan.",
             "layerlist_denied": "Kartlagret kan inte publiceras i en inbäddad karta.",
             "denied_tooltip": "Kartdataproducenterna har inte gett publiceringstillstånd till dessa material i andra webbtjänster eller denna kartlager kan inte visas med den valda kartprojektionen. Kontrollera rätten att publicera i menyn \"Valda Kartlager\" innan du börjar skapa kartan.",

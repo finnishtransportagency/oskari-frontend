@@ -102,15 +102,12 @@ $flyoutPadding: 16px;
     font-weight: normal;
 
     .header {
-        width: 85%;
         position: absolute;
         top: 5px;
-        .title {
-            font-weight: bold;
-        }
+        margin-right: 25px;
     }
     .icon-warning-light {
-        top: 88%;
+        bottom: 0;
         position: absolute;
         cursor: pointer;
     }
@@ -173,9 +170,7 @@ div.oskari-flyout {
         max-width: 700px;
         min-width: 400px;
 
-        label span {
-            /* Indicator selection form */
-            width: 200px;
+        .stats-series-selection {
             display: inline-block;
         }
 
@@ -213,6 +208,31 @@ div.oskari-flyout {
         .statsgrid-ds-selections {
             /* TODO: limits the description from blowing up the flyout, but this needs to be handled in some other way */
             max-width : 450px;
+
+            .oskari-select {
+                // Placeholder styles not depended on enabled/disabled state
+                .SumoSelect {
+                    .placeholder {
+                        font-style: normal;
+                    }
+                }
+                // Placeholder styles for enabled select
+                [class='SumoSelect'] {
+                    .placeholder {
+                        color: #595959;
+                    }
+                }
+                // Placeholder styles for disabled select
+                [class='SumoSelect disabled'] {
+                    cursor: auto;
+                    p {
+                        background-color: #f5f5f5;
+                    }
+                    .placeholder {
+                        color: #979797;
+                    }
+                }
+            }
 
             div.selection {
                 padding-top: 0;
@@ -337,9 +357,11 @@ div.oskari-flyout {
         table.oskari-grid {
             th.selected {
                 background-color: #FDF8D9;
+            }
+            th.selected-effect {
                 animation-name: statsgridcolumnselection;
                 animation-duration: 0.5s;
-                animation-iteration-count: 3;
+                animation-iteration-count: 2;
             }
 
             td {
@@ -347,7 +369,10 @@ div.oskari-flyout {
             }
 
             td:first-child, th:first-child {
-                max-width: 130px;
+                max-width: 140px;
+            }
+            .statsgrid-header-0 {
+                overflow: visible;
             }
         }
 
@@ -520,38 +545,47 @@ div.oskari-flyout {
     * Diagram styles
     * ********************************************/
      &.statsgrid-diagram-flyout {
+        .oskari-flyoutcontentcontainer {
+            overflow: visible;
+            display: flex;
+        }
+        // remove padding to calculate chart size and margins
         .oskari-datacharts {
             position: relative;
-            padding: $flyoutPadding;
+            padding: 0;
             flex: 1;
-            overflow-y: auto;
         }
         .chart-controls {
             display:flex;
             justify-content: center;
             align-items: center;
-            padding: 7px;
+            padding: 20px 20px 28px;
 
            .dropdown {
                 display: flex;
                 max-width: 100%;
            }
         }
+        .chart {
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+        }
+        .axisLabel {
+            margin-top: -15px;
+            position: absolute;
+            opacity: 0.8;
+        }
+        .stats-diagram-holder {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
     }
-    .stats-diagram-holder {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-    }
-}
-
-.statsgrid-diagram-flyout .oskari-flyoutcontentcontainer {
-    overflow: visible;
-    display: flex;
 }
 
 /** Toggle buttons */
-div.mapplugins .mappluginsContainer .mappluginsContent .mapplugin.statsgrid-published-toggle-buttons {
+.mapplugin.statsgrid-published-toggle-buttons {
     border: 1px solid rgba(0, 0, 0, 0.2);
 
     .map {
@@ -789,27 +823,6 @@ div.tab-material-controls div.title {
         padding-top:2em !important;
     }
 }
-.chart {
-    display: flex;
-    justify-content: center;
-}
-.axisLabel {
-    margin-top: -5px;
-    position: absolute;
-    opacity: 0.8;
-}
-.sticky {
-    font-weight: bold;
-    color:#F6F6F6;
-    text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;
-    overflow: hidden;
-    z-index: 3;
-    max-height: 100%;
-}
-
-.statsgrid-diagram-flyout .oskari-flyoutcontentcontainer {
-    max-width:700px;
-  }
 
 /* ********************************************
  * User indicator form
@@ -935,9 +948,12 @@ background-color: #888888;
 /* ********************************************
  * Indicator list
  * ********************************************/
- ol.statsgrid-indicator-list li:nth-child(2n) {
-    background-color: #f3f3f3;
-}
+ ol.statsgrid-indicator-list {
+    min-width: 430px;
+    li:nth-child(2n) {
+        background-color: #f3f3f3;
+    }
+ }
 .indicator-list-remove, .indicator-list-info {
     cursor: pointer;
     float: right;

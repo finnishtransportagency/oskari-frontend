@@ -1,5 +1,241 @@
 # Release Notes
 
+## 2.1.0
+
+For a full list of changes see:
+https://github.com/oskariorg/oskari-frontend/milestone/28?closed=1
+
+Additions:
+- ZoomToFeaturesRequest now supports an additional flag that can be used to limit how "close" the map should be zoomed to/usable when theres a single point feature to be zoomed to or features close to each other.
+- VectorLayerRequest now allows vector layers to be cleaned out (previosly you could just remove features from the layers but not the layer itself via RPC)
+- Vector features now support progress bar as well (features added with AddFeaturesToMapRequest)
+- Added localizations for the new layerlist bundle for french and russian
+- Added initial implementation for a generic React-based form component (used in the new my places form)
+
+Functional changes:
+- Printing no longer opens a new window for the result. Instead it opens a file download for the pdf/png. This fixes an issue where saving the pdf from the preview window failed on some browsers.
+- Added a confirmation when user clicks the "reset map state" button
+- Added a tooltip for layers that have "unknown" availability status on the layer listing (previously a popup was shown with the same info).
+- The search description is now more generic and no longer mentions things that are specific for each Oskari instance like real estate identifiers. See linked PRs for https://github.com/oskariorg/oskari-frontend/pull/1350 on how to override this in an instance.
+- My places form has been refactored. The form is no longer tied to the map location so it can be moved out of the way when editing the geometry. Previously the form could block some parts of the feature geometry making it impossible to modify the geometry on some cases.
+
+Fixes:
+- Fixed an issue where adding a my place to an existing layer before opening the layer in my data failed to load the existing places on the layer for listing
+- Search in embedded maps now shows a message if the search limit was reached (too many results handling)
+- Improved performance of layer listing/adding vector features to the map with vector layer changes. Most visible change in the geoportal performance regarding this is on thematic maps.
+- Fixed an issue where metadata search removed all vector features from map when it was closed (for example removed thematic maps)
+- Fixed an issue where getting feature attributes from MVT-layers wasn't working as intended
+- Changed the way MVT-layers are handled if not supported by the map-implementation (wrong projection/not supported in 3d etc). These layers are now referenced in links if they are in selected layers even when they are not actually shown. Fixes an issue where changing between 2D and 3D appsetups removed MVT-layers from selected layers.
+
+UI-issues fixed:
+- Long style names are now handled better in selected layers listing
+- Fixed a style bleeding issue with printout bundle/fixed language select width on publisher-bundle when printout-bundle was not part of the appsetup
+- Fixed an issue with icons in statistical indicator listing
+- Fixed an issue with the mobile toolbar on the map where the map height was not properly calculated on mobile mode.
+
+Updates for libraries:
+- Update OpenLayers: 6.3.1 -> 6.4.3
+- Update CesiumJS: 1.62 -> 1.74
+- Removed special Cesium handling from 3D mapmodule usage. Manual changes required for Oskari-based 3D-applications. See required changes in sample-application: https://github.com/oskariorg/sample-application/pull/15
+- Continued replacing lodash usage with native functions
+
+Documentation:
+- Printout bundle documentation updated
+- Improved ZoomToFeaturesRequest documentation
+- Improved VectorLayerRequest documentation
+- Improved vector feature styling documentation
+- Separated feature attribute based selector documentation to it's own page since it's now used with both styling and filtering vector features
+- StartUserLocationTrackingRequest/StopUserLocationTrackingRequest have been marked for RPC usage on documentation so they are easier to find since they have been available with RPC since they were added
+
+## 2.0.0
+
+For a full list of changes see:
+https://github.com/oskariorg/oskari-frontend/milestone/27?closed=1
+
+The 2.0 release is mainly for upgrading server-side components but we want to keep the frontend and server versions in sync. We do have a couple of bug fixes included since 1.56.0 but nothing that blows your mind with 2.0 fanfares:
+
+- Added possibility to show raw HTML from localization with Message-component
+- Fixed a bug in publisher that resulted in wrong tools being selected to embedded maps than ones based on user choices
+- Fixed a visual issue with popup height in admin functionality when more than 3 locales are enabled in the Oskari instance
+- Fixed an issue with MapMoveRequest when requested coordinates required reprojection
+- Bumped node-sass and lodash versions
+- Fixed an issue with infobox title height when an empty tag was provided as title
+- Fixed an issue with infobox when opened to 0,0 coordinates (coordinates are required as numbers now)
+- Fixed an issue with scales (optional field enabled with configuration) in printout 
+- Fixed an issue with user generated statistical data import from clipboard
+- Fixed an issue with measurement tools on embedded map
+- Fixed a visual issue with 3D-timecontrol plugin
+- Improved and fixed some translations in publisher and admin for sv and en languages
+
+## 1.56.0
+
+For a full list of changes see:
+https://github.com/oskariorg/oskari-frontend/milestone/24?closed=1
+
+### Map layer administration (admin-layereditor)
+
+- Possible validation errors are now shown collectively when trying to use the save button instead of the button just being disabled
+- Scale limit handling fixed and UI for limits made clearer
+- Added "single tile" toggle in the admin-layereditor UI for WMS-layers 
+- Render mode/collection type selection fixed
+
+### Print functionality
+
+- Unavailable options are now disabled for PNG format
+- Misleading print preview link removed
+- Markers done with the coordinate tool can now be printed as well
+- Custom styles are now passed to the print functionality
+
+### WFS/Vector features
+
+- Added configurable formatters for WFS-layers featuredata "gfi" popup. For config/details see: https://github.com/oskariorg/oskari-frontend/pull/1307
+- Tooltip for WFS-layer features (enabled with styling) should no longer block events from reaching the map making them more useful
+- Files that were used by the old "transport" implementation continue to be cleaned out (documentation still has references...)
+- My places GFI popups are now handled as WFS-data with formatters (so the formatting is a a bit different in this release)
+
+### Build performance tuning
+
+The recently added examples with 3D-libraries makes build take 3x time. We are still considering how to handle this on the sample app so on-boarding/"unboxing"/first build wouldn't not be too terrifying.
+If you don't use the 3D apps we recommend removing them from the application-specific repositories when using sample-application as template.
+
+### AntD UI-components library version update
+
+AntD has been upgraded from 3.x to 4.x. This includes breaking changes for icon usage. See details here: https://github.com/oskariorg/oskari-frontend/pull/1302
+The good news is that the change in icon handling reduces the size clients need to download on their browser for Oskari apps by around 500kb (~200kb gzipped).
+
+Also we changed the `<Message />` tag so it can be used without localization (helps when creating tests for example).
+
+### Other library updates and Node JS version
+
+With the latest library updates the required version of NodeJS is now 10 (previously 8).
+We noticed that upgrading from NodeJS version 8 to version 12 improves build time by 25% or more so we encourage upgrading to the latest LTS.
+Errors from new coding conventions from ESLint upgrade have been overridden as warnings for now. This means that they won't break PRs but will be highlighted in an IDE like Visual studio code.
+Jest upgrade affects async tests and/or testing code that uses setTimeout() but should otherwise be transparent to developers.
+
+- Library updates: jQuery, jsts
+- Build-library updates: Babel, Webpack
+- Test library updates: ESLint, Jest, Enzyme
+
+### Tests for the frontend and lodash removal
+
+Tests have been added for parts of mapmodule and the code has been refactored a bit for better enabling testing. This comes as a by-product of code refactoring for removing the lodash dependency. Lodash was awesome previously but now we can use native JS functions instead of it thanks to the build process change to webpack and transpiling. Most of the code using lodash assumes it is linked as a global _ variable which makes understanding and testing the code more difficult than it should be. It also assumes the version of lodash is 2.x using functions that have been removed from the 4.x version mentioned in package.json so it's even more problematic/misleading.
+
+Any bundles under mapping no longer uses lodash and we will continue working on removing it until we can just drop the dependency. So please use the native versions instead on any new code.
+
+### Other changes
+
+- Thematic maps tool UX/state handling improved
+- Accessing map publishing functionality no longer breaks the feature info query tool
+- Measurement tool now provides more accurate results
+- Map layer filter now includes option for "all layers" - Previously clearing the filter was unnecessarily hidden as a simple x icon (layerlist bundle)
+- User-generated public content from other users are now grouped under "no group" instead of "user layers/places" to make it more apparent that they are not the current users layers
+- My places features are now loaded in smaller pieces for the my data listing (based on the layer selected instead of one big chunk) improving startup time
+- 3D camera mode tool now introduces itself in the guided tour
+- Dimension change bundle now tries to transform marker coordinates when changing projection
+- Version number for Oskari.VERSION now comes directly from package.json (it's not duplicated on code base)
+
+## 1.55.2
+
+- Fix issue with styles on user generated content (myplaces and userlayer layers)
+- Fix visual/layout issues with map scalebar and index map
+- Update OpenLayers 6.2.1 -> 6.3.1
+- Restore an undocumented option for MapMoveRequest to work with just giving bounds without center coordinates. No documentation added as we don't recommend using MapMoveRequest without mandatory x and y coordinates. As bounds can be used to adjust viewport (location and zoom) as only parameter we will probably move this possibility to another request in the future.
+
+## 1.55.1
+
+Main reason for this hotfix was a problem with a vector tile styling library that prevented vector tile layers from being rendered (fixed in https://github.com/openlayers/ol-mapbox-style/pull/262).
+
+For a full list of changes see:
+https://github.com/oskariorg/oskari-frontend/milestone/25?closed=1
+
+Updates to libraries:
+
+- OpenLayers 6.1.1 -> 6.2.1
+- ol-mapbox-style 5.0.2 -> 6.1.1
+- React 16.11.0 -> 16.13.0
+- Styled-components 4.3.2 -> 5.0.1
+- React-beautiful-dnd 12.0.0 -> 13.0.0
+- mobile-detect 1.4.3 -> 1.4.4
+- Removed html-to-image
+
+Other changes:
+
+- Changed implementation for mapmodule.getScreenshot() to restore support for IE
+- Removed misleading old/deprecated documentation/files
+- Fix how supported projections for layers are shown on admin-layereditor
+
+## 1.55.0
+
+For a full list of changes see:
+https://github.com/oskariorg/oskari-frontend/milestone/22?closed=1
+
+New bundle for layer administration: admin-layereditor
+- Currently integrated with layerlist bundle (the React-based layerlisting option) but works with the Oskari request/event API and so can be easily integrated with other layer listing bundles as well
+- LayerModelBuilders now provide information about the layer data they require to function and the fields shown for specific layer type depends on that
+- Also the layer types and versions for layer types that can be managed by the admin is based on layer plugins so this is more extendable approach than before
+- Validation is based on mandatory fields metadata provided by server so the frontend can tell the admin if the server will accept the layer info or not before trying to save it
+- Error handling is much better when adding layers. Reasons for problems are communicated more clearly and in more detail (timeouts, unexpected response from server and what the admin can try to resolve these)
+
+3D:
+- Added a tool/plugin that can be used to control time on the 3D mapmodule. This will affect time in Cesium.js so mostly shadows/sun position at this stage. Time is controllable with the request/event API so RPC can be used for this as well.
+- Added a tool/plugin that can be used to control camera for accessibility when mouse/touch dragging is challenging
+- SetTimeRequest for 3D mapmodule controlling date/time for shadows etc
+
+React components
+- Moved common components and utility to src/react (previously under a bundle)
+- Added Message component for showing localized UI texts
+- Added Messaging component for showing notifications (might be renamed to avoid confusing it with Message component)
+- LocalizationComponent for providing a localizable field for each supported language (common component with admin functionalities)
+- Added a sample bundle for documentary purposes: https://github.com/oskariorg/oskari-frontend/blob/develop/bundles/sample/mymodernbundle/
+
+Other fixes/improvements:
+
+- Fixed an issue with infobox on Firefox: https://github.com/oskariorg/oskari-docs/issues/157
+- Added support for adding multiple custom styles for vector layers in preparation for allowing user to save them (WFS-styles the end user can modify are currently runtime only)
+- Fixed publisher tool layout options
+- Fixed issue with indexmap
+- Fixed some issues with geolocation tracking functionalities
+- Publisher now has a "copy to clipboard" functionality like the link tool
+- Allow download of feature data table for user generated content (my places/userlayer)
+- Added icelandic translations
+- Improvements/fixes for statistical data searches/data fetching/diagram
+- Added text overflow support for vector feature label styling
+
+
+## 1.54.1
+
+For a full list of changes see:
+https://github.com/oskariorg/oskari-frontend/milestone/23?closed=1
+
+- Fixed an issue where user generated my places seemed to disappear while adding new ones
+- Fixed an issue where clicking on an infobox that was NOT opened by map click/GFI caused a new map click to be triggered when clicking the close icon
+- Fixed an issue with statistics indicator selector not working properly on some mobile devices/native scroll component.
+
+## 1.54.0
+
+For a full list of changes see:
+https://github.com/oskariorg/oskari-frontend/milestone/20?closed=1
+
+- Optional 3D-capable mapmodule based on olcesium has been added to Oskari
+- OpenLayers version has been updated to 6.1.1 (Note! paths with /ol3/ references have been updated to /ol/ and you might need to manually update the main.js of your app. See oskari-server/MigrationGuide for details.)
+- Added new React-based bundle implementation for layer listing: framework/layerlist
+- Conditional styling API for vector features has been improved to support ranges etc
+- New option for MapMoveRequest to animate movement
+- New request MapTourRequest for programmatically moving the map through multiple places in a "tour like experience"
+- Performance improvements for vector feature layers
+- Fixed an issue on vector feature styling where a png-icon became "colored" unintentionally
+- Fixed an issue for autocomplete search where spinner was left spinning indefinitely
+- Added new config options for user location tracking (publisher functionality has UI for these to customise embedded maps)
+- Oskari.urls.getRoute() now supports a parameter object. Domain validation method has been added to Oskari.util.
+- Added some more russian translations
+- Other fixes and improvements.
+
+Build & components:
+- Added oskari-ui alias for Oskari's React/AntD-based UI-component library.
+- Improved naming for UI-components like Panel -> CollapsePanel to separate it from other types of Panels etc
+- Introduced a "mutator" concept that is passed to React components via context
+- Fixes for conflicts between current styles and AntD styles
+
 ## 1.53.1
 
 For a full list of changes see:

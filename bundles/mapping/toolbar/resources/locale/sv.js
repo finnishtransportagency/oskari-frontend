@@ -8,26 +8,28 @@ Oskari.registerLocalization(
                 "tooltip": "Länk",
                 "ok": "OK",
                 "copy": "Kopiera länken till klippbordet",
-                "title": "Gör en länk till kartvyn.",
+                "title": "Gör en länk till kartvyn",
                 "cannot": "Denna kartvy kan inte länkas till. Skapa en ny kartvy och försök igen.",
                 "addMarker": "Visa kartans mittmarkör",
                 "skipInfo": "Visa inte snabbguide"
             },
             "history": {
-                "reset": "Gå tillbaka till standardvyn för kartvyn.",
-                "back": "Gå tillbaka till föregående kartvy.",
-                "next": "Flytta till nästa kartvy."
+                "reset": "Gå tillbaka till standardvyn för kartvyn",
+                "confirmReset": "Vill du gå tillbaka till standardvyn för kartvyn?",
+                "back": "Gå tillbaka till föregående kartvy",
+                "next": "Flytta till nästa kartvy"
             },
-            "pan": "Panorera kartvyn genom att dra musen på kartan.",
-            "zoom": "Zooma in kartvyn.",
+            "pan": "Panorera kartvyn genom att dra musen på kartan",
+            "zoom": "Zooma in kartvyn",
             "measure": {
-                "line": "Mät en linje på kartan.",
-                "area": "Mät ett område på kartan."
+                "line": "Mät en linje på kartan",
+                "area": "Mät ett område på kartan"
             }
         },
         "measure": {
             "title": "Mätningsresultat",
             "close": "Avbryt",
+            "clear": "Ta bort alla mätningar",
             "guidance": {
                 "measureline": "Rita en linje och mät avståndet på kartan. Klicka på startpunkten för linjen att börja mäta. Efter det klickar du ut samtliga brytpunkter på linjen.",
                 "measurearea": "Rita ett område och mät den på kartan. Klicka på startpunkten för områdets gränslinje för att börja mäta. Efter det klickar du på samtliga brytpunkter i gränslinjen."

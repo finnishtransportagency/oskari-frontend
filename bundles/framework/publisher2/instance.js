@@ -68,9 +68,8 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.PublisherBundleInstan
              * @param {Oskari.mapframework.bundle.publisher.event.MapPublishedEvent} event
              */
             'Publisher.MapPublishedEvent': function (event) {
-                var loc = this.getLocalization();
-                var url = event.getUrl();
-                var iframeCode = '<div class="codesnippet"><code>&lt;iframe src="' + url + '" allow="geolocation" style="border: none;';
+                var me = this;
+                let iframeCode = event.getUrl() + '" allow="geolocation" style="border: none;';
                 var width = event.getWidth();
                 var height = event.getHeight();
 
@@ -82,15 +81,23 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.PublisherBundleInstan
                     iframeCode += ' height: ' + height + ';';
                 }
 
-                iframeCode += '"&gt;&lt;/iframe&gt;</code></div>';
+                const textCode = '<iframe src="' + iframeCode + '"></iframe>';
+                const codeSnippet = '<div class="codesnippet"><code>&lt;iframe src="' + iframeCode + '"&gt;&lt;/iframe&gt;</code></div>';
 
-                var content = loc.published.desc + '<br/><br/>' + iframeCode;
+                var content = me.loc('published.desc') + '<br/><br/>' + codeSnippet;
 
                 var dialog = Oskari.clazz.create('Oskari.userinterface.component.Popup');
-                var okBtn = dialog.createCloseButton(loc.BasicView.buttons.ok);
-                okBtn.addClass('primary');
-                dialog.show(loc.published.title, content, [okBtn]);
-                this.setPublishMode(false);
+                var closeBtn = dialog.createCloseButton();
+                closeBtn.addClass('primary');
+                const copyBtn = Oskari.clazz.create('Oskari.userinterface.component.Button');
+                copyBtn.setTitle(me.loc('published.copy'));
+                copyBtn.setHandler(() => {
+                    const el = dialog.getElement().find('.codesnippet');
+                    Oskari.util.copyTextToClipboard(textCode, el);
+                });
+                const title = me.loc('published.title');
+                dialog.show(title, content, [copyBtn, closeBtn]);
+                me.setPublishMode(false);
             }
         },
         /**

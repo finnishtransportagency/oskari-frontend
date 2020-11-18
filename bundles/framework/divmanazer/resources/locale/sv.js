@@ -16,7 +16,9 @@ Oskari.registerLocalization(
             "exit": "Avsluta",
             "ok": "OK",
             "save": "Spara",
-            "search": "Sök"
+            "search": "Sök",
+            "yes": "Ja",
+            "no": "Nej"
         },
         "LanguageSelect": {
             "title": "Språk",
@@ -143,6 +145,10 @@ Oskari.registerLocalization(
             }
         },
         "VisualizationForm": {
+            "subheaders" : {
+                "name" : "Namnet på stilen",
+                "style" : "Stil"
+            },
             "tooltips": {
                 "dot": "Redigera punktens stil",
                 "area": "Redigera områdets stil",
@@ -277,7 +283,7 @@ Oskari.registerLocalization(
         },
         "FilterDialog": {
             "title": "Filter",
-            "description": "Välj funktionerna från kartlagret:",
+            "description": "Välj objekt från kartlager:",
             "cancelButton": "Avbryt",
             "clearButton": "Töm filter",
             "refreshButton": "Uppdatera filter",

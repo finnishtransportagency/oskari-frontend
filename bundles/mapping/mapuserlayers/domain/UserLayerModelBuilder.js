@@ -4,14 +4,12 @@
  */
 Oskari.clazz.define(
     'Oskari.mapframework.bundle.myplacesimport.domain.UserLayerModelBuilder',
-    function (sandbox, clusteringDistance) {
+    function (sandbox) {
         this.sandbox = sandbox;
-        this.localization = Oskari.getLocalization('MyPlacesImport');
         this.wfsBuilder = Oskari.clazz.create(
             'Oskari.mapframework.bundle.mapwfs2.domain.WfsLayerModelBuilder',
             sandbox
         );
-        this.clusteringDistance = clusteringDistance;
     }, {
         /**
          * Parses any additional fields to model
@@ -21,43 +19,17 @@ Oskari.clazz.define(
          * @param {Oskari.mapframework.service.MapLayerService} maplayerService not really needed here
          */
         parseLayerData: function (layer, mapLayerJson, maplayerService) {
-            var loclayer = this.localization.layer;
             // call parent parseLayerData
             this.wfsBuilder.parseLayerData(layer, mapLayerJson, maplayerService);
-            // set layer specific data
-            if (this.clusteringDistance && this.clusteringDistance > 0) {
-                layer.setClusteringDistance(this.clusteringDistance);
-            }
-            layer.setOrganizationName(loclayer.organization);
-            layer.setGroups([{
-                id: 'USERLAYER',
-                name: loclayer.inspire
-            }]);
             layer.setDescription(mapLayerJson.description);
             layer.setSource(mapLayerJson.source);
             layer.setRenderingElement(mapLayerJson.renderingElement);
             layer.addLayerUrl(mapLayerJson.renderingUrl);
-            if (mapLayerJson.fields && mapLayerJson.fields.length !== 0) {
-                layer.setFeatureProperties(this.addHiddenFields(mapLayerJson.fields));
-            } else {
-                layer.setFeatureProperties([]);
+            const props = mapLayerJson.propertyNames;
+            if (Array.isArray(props)) {
+                layer.setFields(props.map(p => p.name));
+                layer.setLocales(props.map(p => p.locale));
             }
-            if (mapLayerJson.fieldLocales && mapLayerJson.fieldLocales !== 0) {
-                layer.setLocales(mapLayerJson.fieldLocales);
-            }
-        },
-
-        addHiddenFields: function (fields) {
-            if (fields.indexOf('__fid') === -1) {
-                fields.splice(0, 0, '__fid');
-            }
-            if (fields.indexOf('__centerX') === -1) {
-                fields.push('__centerX');
-            }
-            if (fields.indexOf('__centerY') === -1) {
-                fields.push('__centerY');
-            }
-            return fields;
         }
     }
 );

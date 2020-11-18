@@ -1,5 +1,8 @@
 /* eslint-disable new-cap */
 import { Style as olStyle, Circle as olCircleStyle, Stroke as olStroke, Fill as olFill, Text as olText } from 'ol/style';
+import { filterOptionalStyle, getOptionalStyleFilter } from '../../../../mapmodule/oskariStyle/filter';
+
+const log = Oskari.log('WfsVectorLayerPlugin.util.style');
 
 const defaults = {
     style: {
@@ -108,6 +111,38 @@ const _setFeatureLabel = (feature, textStyle, labelProperty) => {
     textStyle.setText(feature.get(prop));
 };
 
+const getStyleForGeometry = (geometry, styleTypes) => {
+    if (!geometry || !styleTypes) {
+        return;
+    }
+
+    let style = null;
+    let geometries = [];
+    if (typeof geometry.getGeometries === 'function') {
+        geometries = geometry.getGeometries() || [];
+    }
+    switch (geometry.getType()) {
+    case 'LineString':
+    case 'MultiLineString':
+        style = styleTypes.line || styleTypes; break;
+    case 'Polygon':
+    case 'MultiPolygon':
+        style = styleTypes.area || styleTypes; break;
+    case 'Point':
+    case 'MultiPoint':
+        style = styleTypes.dot || styleTypes; break;
+    case 'GeometryCollection':
+        if (geometries.length > 0) {
+            log.debug('Received GeometryCollection. Using first feature to determine feature style.');
+            style = getStyleForGeometry(geometries[0], styleTypes);
+        } else {
+            log.info('Received GeometryCollection without geometries. Feature style cannot be determined.');
+        }
+        break;
+    };
+    return style;
+};
+
 const getStyleFunction = (styleValues, hoverHandler) => {
     const getTypedStyles = (styles, isHovered, isSelected) => {
         if (!styles) {
@@ -129,7 +164,7 @@ const getStyleFunction = (styleValues, hoverHandler) => {
 
         let styleTypes = null;
         if (styleValues.optional) {
-            const found = styleValues.optional.find(op => feature.get(op.key) === op.value);
+            const found = styleValues.optional.find(op => filterOptionalStyle(op.filter, feature));
             if (found) {
                 styleTypes = getTypedStyles(found, isHovered, isSelected);
             }
@@ -137,20 +172,8 @@ const getStyleFunction = (styleValues, hoverHandler) => {
         if (!styleTypes) {
             styleTypes = getTypedStyles(styleValues, isHovered, isSelected);
         }
-
-        let style = null;
-        switch (feature.getGeometry().getType()) {
-        case 'LineString':
-        case 'MultiLineString':
-            style = styleTypes.line || styleTypes; break;
-        case 'Polygon':
-        case 'MultiPolygon':
-            style = styleTypes.area || styleTypes; break;
-        case 'Point':
-        case 'MultiPoint':
-            style = styleTypes.dot || styleTypes; break;
-        };
-        const textStyle = style.getText();
+        const style = getStyleForGeometry(feature.getGeometry(), styleTypes);
+        const textStyle = style ? style.getText() : undefined;
         if (styleTypes.labelProperty && textStyle) {
             _setFeatureLabel(feature, textStyle, styleTypes.labelProperty);
         }
@@ -214,8 +237,7 @@ export const styleGenerator = (styleFactory, layer, hoverHandler) => {
                 hoverDef = merge(featureStyle, optionalDef, hoverStyle);
             }
             const optional = {
-                key: optionalDef.property.key,
-                value: optionalDef.property.value,
+                filter: getOptionalStyleFilter(optionalDef),
                 customized: getGeomTypedStyles(merge(featureStyle, optionalDef), styleFactory),
                 selected: getGeomTypedStyles(merge(featureStyle, optionalDef, defaults.selected), styleFactory),
                 hover: getGeomTypedStyles(hoverDef, styleFactory),

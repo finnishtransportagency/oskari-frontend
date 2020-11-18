@@ -9,22 +9,23 @@ Oskari.registerLocalization(
             "crs": {
                 "EPSG:3067": "ETRS89-TM35FIN hnit",
                 "EPSG:3575": "Norðurpóll LAEA Evrópuhnit",
+                "EPSG:3857": "WGS 84 / Pseudo-Mercator hnit",
                 "default": "{crs} hnit"
             },
             "popup": {
                 "title": "Hnit",
                 "searchButton": "Miðja kort",
                 "addMarkerButton": "Bæta við merki",
-                "info": "Skrifaðu inn hnit eða smelltu á punkt á kortinu.",
+                "info": "Skrifa inn hnit eða smelltu á kortið.",
                 "showMouseCoordinates": "Sýna hnit á bendli"
             },
             "compass": {
                 "lon": "E / lon:",
                 "lat": "N / lat:",
-                "n": "",
-                "e": "",
-                "p": "",
-                "i": ""
+                "n": "N",
+                "e": "A",
+                "p": "N",
+                "i": "A"
             },
             "reversegeocode": {
                 "errorTitle": "Öfug landakóða villa",
@@ -69,6 +70,9 @@ Oskari.registerLocalization(
                     "LATLON:kkj": "KKJ landfræðilegt",
                     "EPSG:3046": "ETRS-TM34",
                     "EPSG:3048": "ETRS-TM36",
+                    "EPSG:3057": "ISN93 / Lambert 1993",
+                    "EPSG:8088": "ISN2016 / Lambert 2016",
+                    "EPSG:3857": "WGS 84 / Pseudo-Mercator -- Spherical Mercator",
                     "EPSG:3873": "ETRS-GK19",
                     "EPSG:3874": "ETRS-GK20",
                     "EPSG:3875": "ETRS-GK21",

@@ -6,10 +6,12 @@ import { createDefaultStyle } from 'ol/style/Style';
 
 import { VectorTileModelBuilder } from './VectorTileModelBuilder';
 import { styleGenerator } from './styleGenerator';
-import mapboxStyleFunction from 'ol-mapbox-style/stylefunction';
+import mapboxStyleFunction from 'ol-mapbox-style/dist/stylefunction';
 import { LAYER_ID, LAYER_HOVER, LAYER_TYPE, FTR_PROPERTY_ID } from '../../domain/constants';
+import { getZoomLevelHelper } from '../../util/scale';
 
 const AbstractMapLayerPlugin = Oskari.clazz.get('Oskari.mapping.mapmodule.AbstractMapLayerPlugin');
+const LayerComposingModel = Oskari.clazz.get('Oskari.mapframework.domain.LayerComposingModel');
 
 /**
  * @class Oskari.mapframework.mapmodule.VectorTileLayerPlugin
@@ -35,7 +37,18 @@ class VectorTileLayerPlugin extends AbstractMapLayerPlugin {
         // register domain builder
         const mapLayerService = this.getSandbox().getService('Oskari.mapframework.service.MapLayerService');
         if (mapLayerService) {
-            mapLayerService.registerLayerModel(this.layertype + 'layer', this._getLayerModelClass());
+            const composingModel = new LayerComposingModel([
+                LayerComposingModel.ATTRIBUTIONS,
+                LayerComposingModel.CREDENTIALS,
+                LayerComposingModel.EXTERNAL_STYLES_JSON,
+                LayerComposingModel.HOVER,
+                LayerComposingModel.SRS,
+                LayerComposingModel.STYLE,
+                LayerComposingModel.STYLES_JSON,
+                LayerComposingModel.TILE_GRID,
+                LayerComposingModel.URL
+            ]);
+            mapLayerService.registerLayerModel(this.layertype + 'layer', this._getLayerModelClass(), composingModel);
             mapLayerService.registerLayerModelBuilder(this.layertype + 'layer', this._getModelBuilder());
         }
         this.getSandbox().getService('Oskari.mapframework.service.VectorFeatureService').registerLayerType(this.layertype, this);
@@ -139,6 +152,14 @@ class VectorTileLayerPlugin extends AbstractMapLayerPlugin {
             return link ? `<a href="${link}">${label}</a>` : label;
         });
     }
+    getUrlParams (layer) {
+        if (!layer.getParams()) {
+            return null;
+        }
+        const params = layer.getParams();
+        return Object.keys(params)
+            .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k])).join('&');
+    }
     /**
      * @method addMapLayerToMap
      * @private
@@ -148,9 +169,18 @@ class VectorTileLayerPlugin extends AbstractMapLayerPlugin {
      * @param {Boolean} isBaseMap
      */
     addMapLayerToMap (layer, keepLayerOnTop, isBaseMap) {
+        if (!this.getSandbox().getMap().isLayerSupported(layer)) {
+            return;
+        }
+        let url = layer.getLayerUrl().replace('{epsg}', this.mapModule.getProjection());
+        const urlParams = this.getUrlParams(layer);
+        if (urlParams) {
+            const paramsPrefix = url.includes('?') ? '&' : '?';
+            url = url + paramsPrefix + urlParams;
+        }
         const sourceOpts = {
             format: new olFormatMVT(),
-            url: layer.getLayerUrl().replace('{epsg}', this.mapModule.getProjection()), // projection code
+            url,
             projection: this.getMap().getView().getProjection(), // OL projection object
             attributions: this.getAttributions(layer)
         };
@@ -161,6 +191,7 @@ class VectorTileLayerPlugin extends AbstractMapLayerPlugin {
         // Properties id, type and hover are being used in VectorFeatureService.
         const vectorTileLayer = new olLayerVectorTile({
             opacity: layer.getOpacity() / 100,
+            visible: layer.isInScale(this.getMapModule().getMapScale()) && layer.isVisible(),
             renderMode: 'hybrid',
             source: this.createSource(layer, sourceOpts)
         });
@@ -169,6 +200,10 @@ class VectorTileLayerPlugin extends AbstractMapLayerPlugin {
         vectorTileLayer.set(LAYER_ID, layer.getId(), silent);
         vectorTileLayer.set(LAYER_TYPE, layer.getLayerType(), silent);
         vectorTileLayer.set(LAYER_HOVER, layer.getHoverOptions(), silent);
+
+        const zoomLevelHelper = getZoomLevelHelper(this.getMapModule().getScaleArray());
+        // Set min max zoom levels that layer should be visible in
+        zoomLevelHelper.setOLZoomLimits(vectorTileLayer, layer.getMinScale(), layer.getMaxScale());
 
         this.mapModule.addLayer(vectorTileLayer, !keepLayerOnTop);
         this.setOLMapLayers(layer.getId(), vectorTileLayer);
@@ -229,6 +264,21 @@ class VectorTileLayerPlugin extends AbstractMapLayerPlugin {
                 });
             }
         }
+    }
+    /**
+     * Called when layer details are updated (for example by the admin functionality)
+     * @param {Oskari.mapframework.domain.AbstractLayer} layer new layer details
+     */
+    _updateLayer (layer) {
+        if (!this.isLayerSupported(layer)) {
+            return;
+        }
+        const zoomLevelHelper = getZoomLevelHelper(this.getMapModule().getScaleArray());
+        const layersImpls = this.getOLMapLayers(layer.getId()) || [];
+        layersImpls.forEach(olLayer => {
+            // Update min max Resolutions
+            zoomLevelHelper.setOLZoomLimits(olLayer, layer.getMinScale(), layer.getMaxScale());
+        });
     }
 }
 

@@ -5,6 +5,9 @@ import * as olProj from 'ol/proj';
 
 import { OskariImageWMS } from './OskariImageWMS';
 import { OskariTileWMS } from './OskariTileWMS';
+import { getZoomLevelHelper } from '../../util/scale';
+
+const LayerComposingModel = Oskari.clazz.get('Oskari.mapframework.domain.LayerComposingModel');
 
 /**
  * @class Oskari.mapframework.mapmodule.WmsLayerPlugin
@@ -28,6 +31,30 @@ Oskari.clazz.define(
             return 'WMS';
         },
 
+        _initImpl () {
+            const mapLayerService = Oskari.getSandbox().getService('Oskari.mapframework.service.MapLayerService');
+            const layerClass = 'Oskari.mapframework.domain.WmsLayer';
+            const composingModel = new LayerComposingModel([
+                LayerComposingModel.CAPABILITIES,
+                LayerComposingModel.CAPABILITIES_STYLES,
+                LayerComposingModel.CREDENTIALS,
+                LayerComposingModel.GFI_CONTENT,
+                LayerComposingModel.GFI_TYPE,
+                LayerComposingModel.GFI_XSLT,
+                LayerComposingModel.LEGEND_IMAGE,
+                LayerComposingModel.REALTIME,
+                LayerComposingModel.REFRESH_RATE,
+                LayerComposingModel.SINGLE_TILE,
+                LayerComposingModel.SELECTED_TIME,
+                LayerComposingModel.SRS,
+                LayerComposingModel.STYLE,
+                LayerComposingModel.URL,
+                LayerComposingModel.VERSION
+            ], ['1.1.1', '1.3.0']);
+            const type = this.getLayerTypeSelector().toLowerCase() + 'layer';
+            mapLayerService.registerLayerModel(type, layerClass, composingModel);
+        },
+
         _createPluginEventHandlers: function () {
             return {
                 AfterChangeMapLayerStyleEvent: function (event) {
@@ -47,6 +74,7 @@ Oskari.clazz.define(
             if (!this.isLayerSupported(layer)) {
                 return;
             }
+            const zoomLevelHelper = getZoomLevelHelper(this.getMapModule().getScaleArray());
 
             var layers = [],
                 olLayers = [];
@@ -122,14 +150,8 @@ Oskari.clazz.define(
                     });
                     this._registerLayerEvents(layerImpl, _layer, 'tile');
                 }
-                // Set min max Resolutions
-                if (_layer.getMaxScale() && _layer.getMaxScale() !== -1) {
-                    layerImpl.setMinResolution(this.getMapModule().getResolutionForScale(_layer.getMaxScale()));
-                }
-                // No definition, if scale is greater than max resolution scale
-                if (_layer.getMinScale() && _layer.getMinScale() !== -1 && (_layer.getMinScale() < this.getMapModule().getScaleArray()[0])) {
-                    layerImpl.setMaxResolution(this.getMapModule().getResolutionForScale(_layer.getMinScale()));
-                }
+                // Set min max zoom levels that layer should be visible in
+                zoomLevelHelper.setOLZoomLimits(layerImpl, _layer.getMinScale(), _layer.getMaxScale());
                 this.mapModule.addLayer(layerImpl, !keepLayerOnTop);
                 // gather references to layers
                 olLayers.push(layerImpl);
@@ -139,6 +161,7 @@ Oskari.clazz.define(
             // store reference to layers
             this.setOLMapLayers(layer.getId(), olLayers);
         },
+
         _registerLayerEvents: function (layer, oskariLayer, prefix) {
             var me = this;
             var source = layer.getSource();
@@ -199,50 +222,39 @@ Oskari.clazz.define(
             });
         },
         updateLayerParams: function (layer, forced, params) {
-            var me = this,
-                i,
-                olLayerList,
-                count = 0,
-                proxyUrl = null;
-            if (!layer) {
+            if (!this.isLayerSupported(layer) || !params) {
                 return;
             }
+            var me = this;
+            var olLayerList = this.mapModule.getOLMapLayers(layer.getId()) || [];
+            const proxyUrl = Oskari.urls.getRoute('GetLayerTile', { id: layer.getId() });
 
-            if (params && layer.isLayerOfType('WMS')) {
-                olLayerList = this.mapModule.getOLMapLayers(layer.getId());
-
-                if (olLayerList) {
-                    count = olLayerList.length;
-                    for (i = 0; i < count; i++) {
-                        var layerSource = olLayerList[i].getSource();
-                        // TileWMS -> original is olSourceTileWMS.getTileLoadFunction
-                        if (layerSource.getTileLoadFunction && typeof (layerSource.getTileLoadFunction) === 'function') {
-                            var originalTileLoadFunction = new OskariTileWMS().getTileLoadFunction();
-                            layerSource.setTileLoadFunction(function (image, src) {
-                                if (src.length >= 2048) {
-                                    proxyUrl = Oskari.urls.getRoute('GetLayerTile') + '&id=' + layer.getId();
-                                    me._imagePostFunction(image, src, proxyUrl);
-                                } else {
-                                    originalTileLoadFunction.apply(this, arguments);
-                                }
-                            });
+            olLayerList.forEach(olLayer => {
+                var layerSource = olLayer.getSource();
+                // TileWMS -> original is olSourceTileWMS.getTileLoadFunction
+                if (typeof layerSource.getTileLoadFunction === 'function') {
+                    var originalTileLoadFunction = new OskariTileWMS().getTileLoadFunction();
+                    layerSource.setTileLoadFunction(function (image, src) {
+                        if (src.length >= 2048) {
+                            me._imagePostFunction(image, src, proxyUrl);
+                        } else {
+                            originalTileLoadFunction.apply(this, arguments);
                         }
-                        // ImageWMS -> original is olSourceImageWMS.getImageLoadFunction
-                        else if (layerSource.getImageLoadFunction && typeof (layerSource.getImageLoadFunction) === 'function') {
-                            var originalImageLoadFunction = new OskariImageWMS().getImageLoadFunction();
-                            layerSource.setImageLoadFunction(function (image, src) {
-                                if (src.length >= 2048) {
-                                    proxyUrl = Oskari.urls.getRoute('GetLayerTile') + '&id=' + layer.getId();
-                                    me._imagePostFunction(image, src, proxyUrl);
-                                } else {
-                                    originalImageLoadFunction.apply(this, arguments);
-                                }
-                            });
-                        }
-                        olLayerList[i].getSource().updateParams(params);
-                    }
+                    });
                 }
-            }
+                // ImageWMS -> original is olSourceImageWMS.getImageLoadFunction
+                else if (typeof layerSource.getImageLoadFunction === 'function') {
+                    var originalImageLoadFunction = new OskariImageWMS().getImageLoadFunction();
+                    layerSource.setImageLoadFunction(function (image, src) {
+                        if (src.length >= 2048) {
+                            me._imagePostFunction(image, src, proxyUrl);
+                        } else {
+                            originalImageLoadFunction.apply(this, arguments);
+                        }
+                    });
+                }
+                olLayer.getSource().updateParams(params);
+            });
         },
         /**
          * @method @private _imagePostFunction
@@ -252,38 +264,53 @@ Oskari.clazz.define(
          */
         _imagePostFunction: function (image, src, proxyUrl) {
             var img = image.getImage();
-            if (typeof window.btoa === 'function') {
-                var xhr = new XMLHttpRequest();
-                // GET ALL THE PARAMETERS OUT OF THE SOURCE URL**
-                var dataEntries = src.split('&');
-                var params = '';
-                // i === 0 -> the actual url, skip. Everything after that is params.
-                for (var i = 1; i < dataEntries.length; i++) {
-                    params = params + '&' + dataEntries[i];
-                }
-                xhr.open('POST', proxyUrl, true);
-
-                xhr.responseType = 'arraybuffer';
-                xhr.onload = function (e) {
-                    if (this.status === 200) {
-                        var uInt8Array = new Uint8Array(this.response);
-                        var i = uInt8Array.length;
-                        var binaryString = new Array(i);
-                        while (i--) {
-                            binaryString[i] = String.fromCharCode(uInt8Array[i]);
-                        }
-                        var data = binaryString.join('');
-                        var type = xhr.getResponseHeader('content-type');
-                        if (type.indexOf('image') === 0) {
-                            img.src = 'data:' + type + ';base64,' + window.btoa(data);
-                        }
-                    }
-                };
-                xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-                xhr.send(params);
-            } else {
+            if (typeof window.btoa !== 'function') {
                 img.src = src;
+                return;
             }
+            var xhr = new XMLHttpRequest();
+            // GET ALL THE PARAMETERS OUT OF THE SOURCE URL**
+            var dataEntries = src.split('&');
+            var params = '';
+            // i === 0 -> the actual url, skip. Everything after that is params.
+            for (var i = 1; i < dataEntries.length; i++) {
+                params = params + '&' + dataEntries[i];
+            }
+            xhr.open('POST', proxyUrl, true);
+
+            xhr.responseType = 'arraybuffer';
+            xhr.onload = function (e) {
+                if (this.status === 200) {
+                    var uInt8Array = new Uint8Array(this.response);
+                    var i = uInt8Array.length;
+                    var binaryString = new Array(i);
+                    while (i--) {
+                        binaryString[i] = String.fromCharCode(uInt8Array[i]);
+                    }
+                    var data = binaryString.join('');
+                    var type = xhr.getResponseHeader('content-type');
+                    if (type.indexOf('image') === 0) {
+                        img.src = 'data:' + type + ';base64,' + window.btoa(data);
+                    }
+                }
+            };
+            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            xhr.send(params);
+        },
+        /**
+         * Called when layer details are updated (for example by the admin functionality)
+         * @param {Oskari.mapframework.domain.AbstractLayer} layer new layer details
+         */
+        _updateLayer: function (layer) {
+            if (!this.isLayerSupported(layer)) {
+                return;
+            }
+            const zoomLevelHelper = getZoomLevelHelper(this.getMapModule().getScaleArray());
+            const layersImpls = this.getOLMapLayers(layer.getId()) || [];
+            layersImpls.forEach(olLayer => {
+                // Update min max Resolutions
+                zoomLevelHelper.setOLZoomLimits(olLayer, layer.getMinScale(), layer.getMaxScale());
+            });
         }
     }, {
         /**

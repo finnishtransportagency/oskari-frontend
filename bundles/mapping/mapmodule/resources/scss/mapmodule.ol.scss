@@ -112,7 +112,12 @@ div.mapplugins {
                     margin-top: $pluginMargin;
                     margin-bottom: $pluginMargin;
                 }
-
+                &.plugin-drag-disabled {
+                    cursor: not-allowed;
+                }
+                .tool-drag-disabled {
+                    cursor: not-allowed;
+                }
             }
 
         }
@@ -361,4 +366,9 @@ div.mapplugins {
 
 .oskari-publisher-font-georgia {
   font-family: Georgia, serif !important;
+}
+
+.map-move-control-disabled {
+    opacity: 0.3 !important;
+    pointer-events: none !important;
 }

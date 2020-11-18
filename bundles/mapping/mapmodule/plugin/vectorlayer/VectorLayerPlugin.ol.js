@@ -11,6 +11,15 @@ import * as olGeom from 'ol/geom';
 import LinearRing from 'ol/geom/LinearRing';
 import GeometryCollection from 'ol/geom/GeometryCollection';
 import { LAYER_ID, LAYER_HOVER, LAYER_TYPE, FTR_PROPERTY_ID, SERVICE_LAYER_REQUEST } from '../../domain/constants';
+import { filterOptionalStyle } from '../../oskariStyle/filter';
+
+import './vectorlayer';
+import './request/AddFeaturesToMapRequest';
+import './request/AddFeaturesToMapRequestHandler';
+import './request/RemoveFeaturesFromMapRequest';
+import './request/RemoveFeaturesFromMapRequestHandler';
+import './request/ZoomToFeaturesRequest';
+import './request/ZoomToFeaturesRequestHandler';
 
 const olParser = new jstsOL3Parser();
 olParser.inject(olGeom.Point, olGeom.LineString, LinearRing, olGeom.Polygon, olGeom.MultiPoint, olGeom.MultiLineString, olGeom.MultiPolygon, GeometryCollection);
@@ -60,6 +69,7 @@ Oskari.clazz.define(
         this._styleCache = {};
         this._animatingFeatures = {};
     }, {
+        __name: 'Oskari.mapframework.mapmodule.VectorLayerPlugin',
         /**
          * @method register
          * Interface method for the plugin protocol
@@ -119,6 +129,9 @@ Oskari.clazz.define(
         },
 
         _createHoverOverlay: function () {
+            // FIXME: There is code in VectorFeatureService.ol.js that creates a tooltip overlay as well
+            // Changing this one seems doesn't seem to have any effect so this could be removed/cleaned out!!
+            // Not cleaning out now with release coming up but whoever sees this comment can clean this out
             var overlayDiv = document.createElement('div');
             overlayDiv.className = 'feature-hover-overlay';
             this._hoverOverlay = new olOverlay({
@@ -313,7 +326,7 @@ Oskari.clazz.define(
             if (layer && layer !== null) {
                 if (layer instanceof olLayerVector) {
                     layerId = layer.get(LAYER_ID);
-                } else if (_.isString(layer) || _.isNumber(layer)) {
+                } else if (typeof layer === 'string' || typeof layer === 'number') {
                     layerId = layer;
                 }
                 olLayer = me._olLayers[layerId];
@@ -326,14 +339,12 @@ Oskari.clazz.define(
                 // Removes only wanted features from the given maplayer
                 if (identifier && identifier !== null && value && value !== null) {
                     me._removeFeaturesByAttribute(olLayer, identifier, value);
-                }
-                // remove all features from the given layer
-                else {
+                } else {
+                    // remove all features from the given layer
                     this._removeAllFeatures(olLayer);
                 }
-            }
-            // Removes all features from all layers if layer is not specified
-            else if (!layer) {
+            } else if (!layer) {
+                // Removes all features from all layers if layer is not specified
                 for (layerId in me._olLayers) {
                     if (me._olLayers.hasOwnProperty(layerId)) {
                         olLayer = me._olLayers[layerId];
@@ -443,6 +454,7 @@ Oskari.clazz.define(
                 me.raiseVectorLayer(olLayer);
             }
             olLayer.setOpacity(layer.getOpacity() / 100);
+            olLayer.setVisible(layer.isVisible());
             return olLayer;
         },
 
@@ -553,32 +565,53 @@ Oskari.clazz.define(
          * @return {Oskari.mapframework.domain.VectorLayer} layer object
          */
         _updateVectorLayer: function (layer, options) {
-            if (layer && options) {
-                var mapLayerService = this._sandbox.getService('Oskari.mapframework.service.MapLayerService');
-                if (options.layerName) {
-                    layer.setName(options.layerName);
-                }
-                if (options.layerOrganizationName) {
-                    layer.setOrganizationName(options.layerOrganizationName);
-                }
-                if (typeof options.opacity !== 'undefined') {
-                    layer.setOpacity(options.opacity);
-                    // Apply changes to ol layer
-                    this._getOlLayer(layer);
-                }
-                if (options.hover) {
-                    layer.setHoverOptions(options.hover);
-                    this._getOlLayer(layer).set(LAYER_HOVER, layer.getHoverOptions());
-                }
-                if (options.layerDescription) {
-                    layer.setDescription(options.layerDescription);
-                }
-                var lyrInService = mapLayerService.findMapLayer(layer.getId());
-                if (lyrInService) {
-                    // Send layer updated notification
-                    var evt = Oskari.eventBuilder('MapLayerEvent')(layer.getId(), 'update');
-                    this._sandbox.notifyAll(evt);
-                }
+            if (!layer || !options) {
+                // nothing to do here
+                return layer;
+            }
+            const sandbox = this.getSandbox();
+            const mapLayerService = sandbox.getService('Oskari.mapframework.service.MapLayerService');
+            let layerUpdate = false;
+
+            if (options.remove) {
+                const request = Oskari.requestBuilder('RemoveMapLayerRequest')(layer.getId());
+                this._sandbox.request(this, request);
+
+                mapLayerService.removeLayer(layer);
+
+                this.removeMapLayerFromMap(layer);
+                delete this._oskariLayers[layer.getId()];
+
+                return layer;
+            }
+            if (options.layerName) {
+                layer.setName(options.layerName);
+                layerUpdate = true;
+            }
+            if (options.layerOrganizationName) {
+                layer.setOrganizationName(options.layerOrganizationName);
+                layerUpdate = true;
+            }
+            if (typeof options.opacity !== 'undefined') {
+                layer.setOpacity(options.opacity);
+                // Apply changes to ol layer
+                this._getOlLayer(layer);
+            }
+            if (options.hover) {
+                layer.setHoverOptions(options.hover);
+                this._getOlLayer(layer).set(LAYER_HOVER, layer.getHoverOptions());
+            }
+            if (options.layerDescription) {
+                layer.setDescription(options.layerDescription);
+                layerUpdate = true;
+            }
+            var lyrInService = mapLayerService.findMapLayer(layer.getId());
+            if (lyrInService && layerUpdate) {
+                // Send layer updated notification
+                var evt = Oskari.eventBuilder('MapLayerEvent')(layer.getId(), 'update');
+                // this causes performance problems with layer listing when spammed
+                // only send event if name/organization or description was changed
+                sandbox.notifyAll(evt);
             }
             return layer;
         },
@@ -595,34 +628,43 @@ Oskari.clazz.define(
             typeof options.opacity !== 'undefined' ||
             options.hover ||
             options.layerDescription ||
-            typeof options.showLayer !== 'undefined');
+            typeof options.showLayer !== 'undefined' ||
+            typeof options.remove !== 'undefined');
         },
         /**
          * @method addFeaturesToMap
          * @public
          * Add feature on the map
          *
+         * For loading indication:
+            // for each feature at start:
+            me.getMapModule().loadingState(layerId, true);
+            // for each feature after processed:
+            me.getMapModule().loadingState(layerId, false);
+            // for each feature that couldn't be added to map:
+            me.getMapModule().loadingState(layerId, null, true);
+         *
          * @param {Object} geometry the geometry WKT string or GeoJSON object or object containing feature properties for updating
          * @param {Object} options additional options
          */
-        addFeaturesToMap: function (geometry, options) {
+        addFeaturesToMap: function (geometry, options = {}) {
             var me = this;
-            var geometryType = me._getGeometryType(geometry);
-            var format = me._supportedFormats[geometryType];
+            const geometryType = me._getGeometryType(geometry);
+            const format = me._supportedFormats[geometryType];
             var olLayer;
             var layer;
             var vectorSource;
+            const layerId = options.layerId || 'VECTOR';
 
-            options = options || {};
             // if there's no layerId provided -> Just use a generic vector layer for all.
             if (!options.layerId) {
-                options.layerId = 'VECTOR';
+                options.layerId = layerId;
             }
             if (!options.attributes) {
                 options.attributes = {};
             }
-            if (!me._features[options.layerId]) {
-                me._features[options.layerId] = [];
+            if (!me._features[layerId]) {
+                me._features[layerId] = [];
             }
 
             layer = me.prepareVectorLayer(options);
@@ -630,10 +672,16 @@ Oskari.clazz.define(
             vectorSource = olLayer.getSource();
 
             if (!me.getMapModule().isValidGeoJson(geometry) && typeof geometry === 'object') {
+                // when updating style -> options has new style and "geometry" is used for
+                // selecting feature to update like in thematic maps: { id: regionid }
+                me.getMapModule().loadingState(layerId, true);
                 for (var key in geometry) {
+                    me.getMapModule().loadingState(layerId, true);
                     me._updateFeature(options, key, geometry[key]);
+                    me.getMapModule().loadingState(layerId, false);
                 }
                 me._applyPrioOnSource(options.layerId, vectorSource, options.prio);
+                me.getMapModule().loadingState(layerId, false);
                 return;
             }
 
@@ -644,6 +692,8 @@ Oskari.clazz.define(
             if (geometryType === 'GeoJSON' && !me.getMapModule().isValidGeoJson(geometry)) {
                 return;
             }
+            // initial loading stopped at end of function
+            this.getMapModule().loadingState(layerId, true);
             var features = format.readFeatures(geometry);
             // add cursor if defined so
             if (options.cursor) {
@@ -656,6 +706,8 @@ Oskari.clazz.define(
                 });
             }
             features.forEach(function (feature) {
+                // start loading/feature
+                me.getMapModule().loadingState(layerId, true);
                 if (typeof feature.getId() === 'undefined' && typeof feature.get(FTR_PROPERTY_ID) === 'undefined') {
                     var id = 'F' + me._nextFeatureId++;
                     feature.setId(id);
@@ -667,16 +719,16 @@ Oskari.clazz.define(
             // clear old features if defined so
             if (options.clearPrevious === true) {
                 vectorSource.clear();
-                me._features[options.layerId] = [];
+                me._features[layerId] = [];
             }
             // prio handling
             var prio = options.prio || 0;
-            me._features[options.layerId].push({
+            me._features[layerId].push({
                 data: features,
                 prio: prio
             });
 
-            me._applyPrioOnSource(options.layerId, vectorSource, options.prio);
+            me._applyPrioOnSource(layerId, vectorSource, options.prio);
             vectorSource.addFeatures(features);
 
             // notify other components that features have been added
@@ -690,6 +742,11 @@ Oskari.clazz.define(
                 var event = addEvent;
                 if (!feature.getGeometry()) {
                     event = errorEvent;
+                    // signal error on loading
+                    me.getMapModule().loadingState(layerId, null, true);
+                } else {
+                    // signal end of loading
+                    me.getMapModule().loadingState(layerId, false);
                 }
                 event.addFeature(feature.getId(), geojson, olLayer.get(LAYER_ID));
             });
@@ -712,6 +769,7 @@ Oskari.clazz.define(
                     }
                 }
             }
+            me.getMapModule().loadingState(layerId, false);
         },
         /**
          * @method _applyPrioOnSource
@@ -749,13 +807,12 @@ Oskari.clazz.define(
          */
         _updateFeature: function (options, propertyName, value) {
             const { prio, layerId, featureStyle } = options;
-            var layers = { layer: layerId };
             var values = Array.isArray(value) ? value : [value];
             var searchValues = values.map(cur => typeof cur === 'object' ? cur.value : cur);
             var searchOptions = {
                 [propertyName]: searchValues
             };
-            this.getFeaturesMatchingQuery(layers, searchOptions).forEach(feature => {
+            this.getFeaturesMatchingQuery([layerId], searchOptions).forEach(feature => {
                 const updateValue = values.find(cur => typeof cur === 'object' && feature.get(propertyName) === cur.value);
                 if (updateValue && updateValue.properties) {
                     Object.keys(updateValue.properties).forEach(key => feature.set(key, updateValue.properties[key]));
@@ -1067,7 +1124,7 @@ Oskari.clazz.define(
          *         }
          *     }
          * }
-         * @param {Object} feature ol3 feature
+         * @param {Object} feature ol feature
          * @param {Boolean} update update feature style
          */
         getStyle: function (options, feature, update) {
@@ -1078,7 +1135,6 @@ Oskari.clazz.define(
             const overrideStyle = options.featureStyle || me._layerStyles[options.layerId] || {};
             const baseStyle = update && cached.oskari ? cached.oskari : this._defaultStyle;
             cached.oskari = jQuery.extend(true, {}, baseStyle, overrideStyle);
-
             // Optional styles based on property values
             if (feature && options.optionalStyles) {
                 const optionalStyleDef = me.getOptionalStyle(options.optionalStyles, cached.oskari, feature);
@@ -1091,7 +1147,7 @@ Oskari.clazz.define(
             if (cached.ol) {
                 zIndex = cached.ol.getZIndex();
             }
-            cached.ol = me.getMapModule().getStyle(cached.oskari);
+            cached.ol = me.getMapModule().getStyle(cached.oskari, null, overrideStyle);
             cached.ol.setZIndex(zIndex);
             return cached.ol;
         },
@@ -1105,37 +1161,49 @@ Oskari.clazz.define(
          * */
         getOptionalStyle: function (optionalStyles, defStyle, feature) {
             for (var i in optionalStyles) {
-                if (optionalStyles[i].hasOwnProperty('property') && feature.getProperties()) {
-                    // check feature property  values and take style, if there is match case
-                    var property = optionalStyles[i].property;
-                    if (property.hasOwnProperty('key') && property.hasOwnProperty('value') && feature.getProperties().hasOwnProperty(property.key)) {
-                        if (property.value === feature.getProperties()[property.key]) {
-                            // overriding default style with feature style
-                            return jQuery.extend(true, {}, defStyle, optionalStyles[i]);
-                        }
-                    }
+                if (filterOptionalStyle(optionalStyles[i], feature)) {
+                    return jQuery.extend(true, {}, defStyle, optionalStyles[i]);
                 }
             }
         },
+
         /**
          * @method zoomToFeatures
-         *  - zooms to features
-         * @param {Object} layer
-         * @param {Object} options
+         *  - moves map to show to features on the viewport
+         * @param {Object} opts
+         * @param {Object} featureFilter
          */
-        zoomToFeatures: function (layer, options) {
-            var me = this;
-            var layers = me.getLayerIds(layer);
-            var features = me.getFeaturesMatchingQuery(layers, options);
-            if (!_.isEmpty(features)) {
-                var vector = new olSourceVector({
+        zoomToFeatures: function (opts = {}, featureFilter) {
+            const layers = this._getLayerIds(opts.layer);
+            const features = this.getFeaturesMatchingQuery(layers, featureFilter);
+            if (features.length > 0) {
+                const tmpLayer = new olSourceVector({
                     features: features
                 });
-                var extent = vector.getExtent();
-                extent = me.getBufferedExtent(extent, 35);
-                me.getMapModule().zoomToExtent(extent);
+                const extent = this.getBufferedExtent(tmpLayer.getExtent(), 35);
+                this.getMapModule().zoomToExtent(extent, false, false, opts.maxZoomLevel);
             }
-            me.sendZoomFeatureEvent(features);
+            this.sendZoomFeatureEvent(features);
+        },
+        /**
+         * @method _getLayerIds
+         * @private
+         * @param {Array|String|Number} layer id or array of layer ids (optional)
+         * @return {Array} array of layer ids that was requested and we recognized
+         */
+        _getLayerIds: function (layer = []) {
+            if (!Array.isArray(layer)) {
+                // the value for "layer" needs to be an array so wrap it in one if it isn't
+                layer = [layer];
+            }
+            const allLayers = Object.keys(this._olLayers);
+            if (!layer.length) {
+                // return all layers we know of if layer is not specified
+                return allLayers;
+            }
+
+            // filtering the requested layers by checking that we know of them
+            return layer.filter(id => allLayers.includes(id));
         },
         /**
          * @method getBufferedExtent
@@ -1168,9 +1236,9 @@ Oskari.clazz.define(
         sendZoomFeatureEvent: function (features) {
             var me = this;
             var featureEvent = Oskari.eventBuilder('FeatureEvent')().setOpZoom();
-            if (!_.isEmpty(features)) {
+            if (features) {
                 var formatter = me._supportedFormats.GeoJSON;
-                _.each(features, function (feature) {
+                features.forEach(feature => {
                     var geojson = formatter.writeFeaturesObject([feature]);
                     featureEvent.addFeature(feature.getId(), geojson, feature.layerId);
                 });
@@ -1190,60 +1258,38 @@ Oskari.clazz.define(
         /**
          * @method getFeaturesMatchingQuery
          *  - gets features matching query
-         * @param {Array} layers, object like {layer: ['layer1', 'layer2']}
+         * @param {Array} layers array of layer ids like ['layer1', 'layer2']
          * @param {Object} featureQuery and object like { "id" : [123, "myvalue"] }
          */
-        getFeaturesMatchingQuery: function (layers, featureQuery) {
+        getFeaturesMatchingQuery: function (layers = [], featureQuery) {
             var me = this;
-            var features = [];
-            _.each(layers, function (layerId) {
+            let features = [];
+            layers.forEach(layerId => {
                 if (!me._olLayers[layerId]) {
                     // invalid layerId
                     return;
                 }
                 var sourceFeatures = me._olLayers[layerId].getSource().getFeatures();
-                if (_.isEmpty(featureQuery)) {
+                if (typeof featureQuery !== 'object' || !Object.keys(featureQuery).length) {
                     // no query requirements, add all features in layer
                     features = features.concat(sourceFeatures);
                     return;
                 }
-                _.each(sourceFeatures, function (feature) {
-                    feature.layerId = layerId;
-                    _.each(featureQuery, function (allowedValues, requestedProperty) {
+                const filteredAndModified = sourceFeatures.filter(feature => {
+                    return Object.entries(featureQuery).some(([requestedProperty, allowedValues]) => {
                         var featureValue = feature.get(requestedProperty);
-                        if (!featureValue) {
-                            // feature doesn't have the property, don't include it
-                            return;
+                        if (typeof featureValue === 'undefined') {
+                            return false;
                         }
-                        _.each(allowedValues, function (value) {
-                            if (featureValue === value) {
-                                features.push(feature);
-                            }
-                        });
+                        return allowedValues.includes(featureValue);
                     });
+                }).map(f => {
+                    f.layerId = layerId;
+                    return f;
                 });
+                features = features.concat(filteredAndModified);
             });
             return features;
-        },
-        /**
-         * @method getLayerIds
-         *  -
-         * @param {Object} layerIds
-         * @return {Array} layres
-         */
-        getLayerIds: function (layerIds) {
-            var me = this;
-            var layers = [];
-            if (_.isEmpty(layerIds)) {
-                _.each(me._olLayers, function (key, value) {
-                    layers.push(value);
-                });
-            } else {
-                _.each(layerIds.layer, function (key, value) {
-                    layers.push(key);
-                });
-            }
-            return layers;
         },
         /**
          * @method getLayerFeatures

@@ -190,7 +190,6 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.RegionsetViewer', function (ins
             });
             const borders = regionsWithoutValue.map(id => 'border' + id);
             const removes = regionsWithoutValue.concat(borders);
-
             sandbox.postRequestByName('MapModulePlugin.RemoveFeaturesFromMapRequest', ['id', removes, me.LAYER_ID]);
         }
         addFeaturesRequestParams.forEach(params => {
@@ -456,6 +455,9 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.RegionsetViewer', function (ins
             // Always show the active indicator
             me.render(state.getRegion());
         });
+        me.service.on('StatsGrid.ParameterChangedEvent', function (event) {
+            me.render(state.getRegion());
+        });
 
         me.service.on('StatsGrid.RegionsetChangedEvent', function (event) {
             // Need to update the map
@@ -476,6 +478,13 @@ Oskari.clazz.define('Oskari.statistics.statsgrid.RegionsetViewer', function (ins
 
         me.service.on('StatsGrid.ClassificationChangedEvent', function (event) {
             // Classification changed, need update map
+            me.render(state.getRegion());
+        });
+        me.service.on('StatsGrid.StateChangedEvent', function (event) {
+            if (event.isReset()) {
+                me._clearRegions();
+                return;
+            }
             me.render(state.getRegion());
         });
 

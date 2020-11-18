@@ -107,7 +107,14 @@ Oskari.registerLocalization(
                 },
                 "dialog": {
                     "title": "Map Marker",
-                    "message": "Select a new location for your map marker by clicking the map."
+                    "message": "Select a new location for your map marker by clicking the map.",
+                    "error": {
+                        "title": "Error for getting location!",
+                        "timeout": "Getting a location takes longer than excepted...",
+                        "denied": "The site has blocked location. Please enable location and try again",
+                        "noLocation": "Failed to determine location",
+                        "close": "Close"
+                    }
                 }
             },
             "MyLocationPlugin": {
@@ -115,7 +122,14 @@ Oskari.registerLocalization(
             },
             "PanButtonsPlugin": {
                 "center" : {
-                    "tooltip": "Move to the original map view"
+                    "tooltip": "Move to the original map view",
+                    "confirmReset": "Do you wish to return to the original view?"
+                }
+            },
+            "Tiles3DLayerPlugin": {
+                "layerFilter": {
+                    "text": "3D layers",
+                    "tooltip": "Show only 3D-datasets"
                 }
             }
         },
