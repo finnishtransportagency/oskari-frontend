@@ -584,11 +584,19 @@ export class MapModule extends AbstractMapModule {
      * @param {Boolean} suppressEnd true to NOT send an event about the map move
      *  (other components wont know that the map has moved, only use when chaining moves and
      *     wanting to notify at end of the chain for performance reasons or similar) (optional)
+     * @param {Number} maxZoomLevel restrict to max level so we don't zoom "too close" for point features etc (optional)
      */
-    zoomToExtent (bounds, suppressStart, suppressEnd) {
+    zoomToExtent (bounds, suppressStart, suppressEnd, maxZoomLevel = -1) {
         var extent = this.__boundsToArray(bounds);
-        this.getMap().getView().fit(extent);
+        const opts = {};
+
+        if (maxZoomLevel !== -1) {
+            // if param is defined enable restriction to prevent "overzooming" for point features etc
+            opts.maxZoom = maxZoomLevel;
+        }
+        this.getMap().getView().fit(extent, opts);
         this.updateDomain();
+
         // send note about map change
         if (suppressStart !== true) {
             this.notifyStartMove();

@@ -26,6 +26,10 @@ Oskari.registerLocalization(
                 'newest': {
                     'title': 'Newest',
                     'tooltip': 'Show ## newest map layers'
+                },
+                'raster': {
+                    'title': 'Raster layers',
+                    'tooltip': 'Show only raster layers'
                 }
             },
             'grouping': {
@@ -51,7 +55,7 @@ Oskari.registerLocalization(
                 'DOWN': 'The map layer is not currently available.',
                 'ERROR': 'The map layer is not currently available.',
                 'MAINTENANCE': 'The map layer may be periodically not available during the next few days.',
-                'UNKNOWN': '',
+                'UNKNOWN': 'The status information for this map layer is not available.',
                 'UNSTABLE': ''
             },
             'guidedTour': {
