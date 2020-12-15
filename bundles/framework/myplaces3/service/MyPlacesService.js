@@ -48,13 +48,6 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplaces3.service.MyPlacesServic
         _removePlaces: function (categoryId) {
             delete this._placesList[categoryId];
         },
-        _removePlacesFromCategory: function (categoryId) {
-            delete this._placesList[categoryId];
-        },
-        _removePlaceFromCategory: function (id, categoryId) {
-            this._placesList[categoryId] = this.getPlacesInCategory(categoryId)
-                .filter(place => place.getId() !== id);
-        },
         findMyPlaceByLonLat: function (lonlat, zoom) {
             this.log.info('findMyPlaceByLonLat() is not implemented');
         },

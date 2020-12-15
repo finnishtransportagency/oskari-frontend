@@ -183,6 +183,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.myplaces3.view.PlaceForm',
                     error: this.loc('validation.descIllegal')
                 });
             }
+
             if (errors.length > 0) {
                 return { errors };
             }
