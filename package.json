@@ -74,7 +74,7 @@
     "moment": "2.24.0",
     "node-sass": "4.14.1",
     "ol": "6.4.3",
-    "ol-mapbox-style": "6.1.4",
+    "ol-mapbox-style": "6.1.1",
     "olcs": "2.11.3",
     "optimize-css-assets-webpack-plugin": "5.0.3",
     "query-string": "6.8.3",
